@@ -1,6 +1,6 @@
 {
   "name": "rav-xss",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RAV XSS | 🎯 Basic Reflected XSS scanner for bug bounty programs.",
   "main": "src/index.js",
   "scripts": {
