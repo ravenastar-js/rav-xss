@@ -4,9 +4,6 @@ const { colors } = require("../config/colors");
 const boxManager = require("./box");
 const packageInfo = require("./packageInfo");
 
-/**
- * 📝 Logger - Sistema de logging
- */
 class Logger {
   static log(level, msg) {
     const styles = {
@@ -32,8 +29,8 @@ class Logger {
     console.log(box);
   }
 
-  static showResults(results, targetUrl, category, duration, reportPath) {
-    const box = boxManager.createResultBox(results, targetUrl, category, duration, reportPath);
+  static showResults(results, targetUrl, category, duration, reportPath, reportDir) {
+    const box = boxManager.createResultBox(results, targetUrl, category, duration, reportPath, reportDir);
     console.log(box);
   }
 

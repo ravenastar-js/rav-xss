@@ -3,9 +3,11 @@
 const parseArgs = () => {
   const args = process.argv.slice(2);
   return {
+    headed: args.includes("--headed"),
+    verbose: args.includes("--verbose") || args.includes("-v"),
     help: args.includes("--help") || args.includes("-h"),
     configure: args.includes("--configure"),
-    verbose: args.includes("--verbose") || args.includes("-v"),
+    openReports: args.includes("--open-reports") || args.includes("-r"),
     url: getArgValue(args, "--url"),
     category: getArgValue(args, "--category"),
     delay: parseInt(getArgValue(args, "--delay") || "0", 10)
@@ -22,5 +24,6 @@ const getArgValue = (args, flag) => {
 
 const hasHelp = (args) => args.help;
 const shouldConfigure = (args) => args.configure;
+const shouldOpenReports = (args) => args.openReports;
 
-module.exports = { parseArgs, hasHelp, shouldConfigure };
+module.exports = { parseArgs, hasHelp, shouldConfigure, shouldOpenReports };

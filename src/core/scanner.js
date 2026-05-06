@@ -334,7 +334,14 @@ class XSSScanner {
     const displayPath = this.formatReportPath(textPath);
     const duration = ((new Date(this.results.scan_end) - new Date(this.results.scan_start)) / 1000).toFixed(1);
 
-    Logger.showResults(this.results, this.targetUrl, this.category, duration, displayPath);
+    Logger.showResults(
+      this.results, 
+      this.targetUrl, 
+      this.category, 
+      duration, 
+      displayPath,
+      this.config.scanner.report_dir
+    );
 
     process.exit(this.results.vulns_found > 0 ? 1 : 0);
   }

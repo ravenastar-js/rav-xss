@@ -4,9 +4,6 @@ const boxen = require("boxen");
 const { colors, theme } = require("../config/colors");
 const packageInfo = require("./packageInfo");
 
-/**
- * 📦 Box Manager - Cria caixas estilizadas para o RAV XSS
- */
 class BoxManager {
 
   get appInfo() {
@@ -32,7 +29,7 @@ class BoxManager {
   }
 
   createWelcomeBox(config, totalPayloads, category, targetUrl) {
-    const version = packageInfo.version || "V1";
+    const version = packageInfo.version || "1.0.0";
     const contentLines = [];
     
     contentLines.push(colors.info.bold("🛡️  Bug Bounty Edition"));
@@ -56,7 +53,7 @@ class BoxManager {
     contentLines.push("");
     
     const infoItems = [
-      `${colors.icon.version} ${colors.muted("Version:")} ${colors.primary.bold(version)}`,
+      `${colors.icon.version} ${colors.muted("Version:")} ${colors.primary.bold("v" + version)}`,
       `${colors.icon.payload} ${colors.muted("Payloads:")} ${colors.primary.bold(String(totalPayloads))}`,
       `${colors.icon.category} ${colors.muted("Category:")} ${colors.highlight(category || "Not selected")}`,
       `${colors.icon.target} ${colors.muted("Target:")} ${colors.url(this.truncateUrl(targetUrl))}`
@@ -94,14 +91,14 @@ class BoxManager {
     });
   }
 
-  createResultBox(results, targetUrl, category, duration, reportPath) {
+  createResultBox(results, targetUrl, category, duration, reportPath, reportDir) {
     const hasVulns = results.vulns_found > 0;
     const statusIcon = hasVulns ? colors.icon.error : colors.icon.success;
     const statusColor = hasVulns ? colors.error : colors.success;
     const statusText = hasVulns ? `${results.vulns_found} XSS FOUND` : "ALL CLEAN";
     
-    const displayReportPath = reportPath.length > 50 
-      ? "..." + reportPath.substring(reportPath.length - 47)
+    const displayReportPath = reportPath.length > 45 
+      ? "..." + reportPath.substring(reportPath.length - 42)
       : reportPath;
     
     const content = [
@@ -112,10 +109,27 @@ class BoxManager {
       `${colors.muted("Tests")}     ${colors.primary.bold(String(results.total_tests))}`,
       `${colors.muted("Duration")}  ${colors.highlight.bold(duration + "s")}`,
       `${colors.muted("Result")}    ${statusColor.bold(statusText)}`,
-      `${colors.muted("Report")}    ${colors.link(displayReportPath)}`
+      "",
+      `${colors.muted("Report")}    ${colors.link(displayReportPath)}`,
+      "",
+      `${colors.dim("─".repeat(50))}`,
+      "",
+      `${colors.text("📁 To open reports folder:")}`,
+      `${colors.action.bold("  rav-xss --open-reports")}`,
+      `${colors.muted("  or")}`,
+      `${colors.action.bold("  rav-xss -r")}`,
     ].join("\n");
     
-    return this.createBox(content, {
+    if (reportDir) {
+      const displayDir = reportDir.length > 50 
+        ? "..." + reportDir.substring(reportDir.length - 47)
+        : reportDir;
+      content.push("");
+      content.push(`${colors.muted("📂 Reports folder:")}`);
+      content.push(`${colors.dim(displayDir)}`);
+    }
+    
+    return this.createBox(content.join("\n"), {
       borderStyle: "double",
       padding: 2,
       margin: { top: 2, bottom: 1 },
