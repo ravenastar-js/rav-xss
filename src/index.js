@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 "use strict";
 
-const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const open = require("open");
 const { parseArgs, hasHelp, shouldConfigure, shouldOpenReports } = require("./cli/args");
 const { showHelp } = require("./cli/help");
 const { runWizard } = require("./cli/wizard");
@@ -12,40 +12,36 @@ const { XSSScanner } = require("./core/scanner");
 const { colors } = require("./config/colors");
 
 /**
- * Abre a pasta de relatórios no explorador de arquivos
+ * 📂 Abre a pasta de relatórios no explorador de arquivos
+ * Usa o pacote 'open' para compatibilidade cross-platform
  */
-const openReportsFolder = (reportDir) => {
+const openReportsFolder = async (reportDir) => {
   const resolvedPath = path.resolve(reportDir);
   
   console.log(`\n${colors.text("📂 Opening reports folder:")} ${colors.link(resolvedPath)}\n`);
   
   if (!fs.existsSync(resolvedPath)) {
-    console.log(colors.warning(`⚠️  Reports folder doesn't exist yet. Creating...`));
-    fs.mkdirSync(resolvedPath, { recursive: true });
-    console.log(colors.success(`✅ Reports folder created!`));
-  }
-  
-  const platform = process.platform;
-  let command;
-  
-  if (platform === "win32") {
-    command = `explorer ${resolvedPath}`;
-  } else if (platform === "darwin") {
-    command = `open "${resolvedPath}"`;
-  } else {
-    command = `xdg-open "${resolvedPath}"`;
-  }
-  
-  exec(command, (error) => {
-    if (error) {
-      console.log(colors.error(`❌ Could not open folder automatically.`));
+    console.log(colors.warning("⚠️  Reports folder doesn't exist yet. Creating..."));
+    try {
+      fs.mkdirSync(resolvedPath, { recursive: true });
+      console.log(colors.success("✅ Reports folder created!"));
+    } catch (err) {
+      console.log(colors.error(`❌ Could not create folder: ${err.message}`));
       console.log(colors.text(`📂 Reports location: ${colors.link(resolvedPath)}`));
-      console.log(colors.muted(`\n  You can open it manually or run a scan first.`));
-    } else {
-      console.log(colors.success(`✅ Reports folder opened!`));
+      process.exit(1);
     }
-    process.exit(0);
-  });
+  }
+  
+  try {
+    await open(resolvedPath);
+    console.log(colors.success("✅ Reports folder opened!"));
+  } catch (error) {
+    console.log(colors.error(`❌ Could not open folder: ${error.message}`));
+    console.log(colors.text(`📂 Reports location: ${colors.link(resolvedPath)}`));
+    console.log(colors.muted(`\n  You can open it manually.`));
+  }
+  
+  process.exit(0);
 };
 
 const main = async () => {
@@ -63,7 +59,7 @@ const main = async () => {
   
   if (shouldOpenReports(args)) {
     const config = loadConfig();
-    openReportsFolder(config.scanner.report_dir);
+    await openReportsFolder(config.scanner.report_dir);
     return;
   }
   

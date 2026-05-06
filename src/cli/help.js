@@ -11,13 +11,13 @@ const showHelp = () => {
     rav-xss [options]
 
   ${chalk.hex('#7ec8e3').bold('Options:')}
-    --url <url>         Target URL with [XSS] placeholder
-    --category <name>   Payload category (Basic, FilterEvasion, Polyglots, WAFBypass)
-    --delay <ms>        Delay between requests (default: 500ms)
-    --verbose, -v       Show detailed output
-    --help, -h          Display this help message
-    --configure         Interactive configuration wizard
-    --open-reports, -r  Open reports folder in file explorer
+    --url <url>           Target URL with [XSS] placeholder
+    --category <name>     Payload category (Basic, FilterEvasion, Polyglots, WAFBypass)
+    --delay <ms>          Delay between requests (default: 500ms)
+    --verbose, -v         Show detailed output
+    --help, -h            Display this help message
+    --configure           Interactive configuration wizard
+    --open-reports, -r    Open reports folder in file explorer
 
   ${chalk.hex('#7ec8e3').bold('Examples:')}
     rav-xss
