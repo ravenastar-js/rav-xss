@@ -14,7 +14,7 @@ const { Reporter } = require("../utils/reporter");
 
 const CATEGORY_MAP = {
   "basic": ["🔰 Basic Payloads", "Standard HTML tags & events"],
-  "filterevasion": ["🛡️  Filter Evasion", "Encoding, null bytes, obfuscation"],
+  "filterevasion": ["🛡️ Filter Evasion", "Encoding, null bytes, obfuscation"],
   "polyglots": ["🎭 Polyglots", "Multi-context payloads"],
   "wafbypass": ["🔥 WAF Bypass", "Cloudflare, ModSecurity evasion"]
 };
@@ -255,7 +255,7 @@ class XSSScanner {
     return { payload, url, vulnerable, index: index + 1 };
   }
 
-  async run() {
+    async run() {
     await this.initialize();
     this.results.scan_start = new Date().toISOString();
 
@@ -331,12 +331,40 @@ class XSSScanner {
     this.results.scan_end = new Date().toISOString();
 
     const { textPath } = this.reporter.saveReport(this.results, this.targetUrl);
-    const relativePath = path.relative(process.cwd(), textPath);
+    const displayPath = this.formatReportPath(textPath);
     const duration = ((new Date(this.results.scan_end) - new Date(this.results.scan_start)) / 1000).toFixed(1);
 
-    Logger.showResults(this.results, this.targetUrl, this.category, duration, relativePath);
+    Logger.showResults(this.results, this.targetUrl, this.category, duration, displayPath);
 
     process.exit(this.results.vulns_found > 0 ? 1 : 0);
+  }
+
+  /**
+   * Formata o caminho do relatório para exibição
+   * @param {string} absolutePath - Caminho absoluto do relatório
+   * @returns {string} Caminho formatado para exibição
+   */
+  formatReportPath(absolutePath) {
+    const normalized = absolutePath.replace(/\\/g, "/");
+    const cwd = process.cwd().replace(/\\/g, "/");
+    
+    if (normalized.startsWith(cwd)) {
+      let relative = normalized.substring(cwd.length);
+      if (relative.startsWith("/")) relative = relative.substring(1);
+      return `./${relative}`;
+    }
+    
+    const nodeModulesIndex = normalized.indexOf("node_modules/rav-xss/");
+    if (nodeModulesIndex !== -1) {
+      const simplified = normalized.substring(nodeModulesIndex + "node_modules/".length);
+      const localNodeModules = path.join(process.cwd(), "node_modules").replace(/\\/g, "/");
+      if (normalized.startsWith(localNodeModules)) {
+        return `./node_modules/${simplified}`;
+      }
+      return normalized;
+    }
+    
+    return normalized;
   }
 
   truncateUrl(url, maxLength = 55) {

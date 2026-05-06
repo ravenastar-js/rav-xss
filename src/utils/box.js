@@ -100,6 +100,10 @@ class BoxManager {
     const statusColor = hasVulns ? colors.error : colors.success;
     const statusText = hasVulns ? `${results.vulns_found} XSS FOUND` : "ALL CLEAN";
     
+    const displayReportPath = reportPath.length > 50 
+      ? "..." + reportPath.substring(reportPath.length - 47)
+      : reportPath;
+    
     const content = [
       `${colors.action.bold(`${statusIcon}  SCAN COMPLETE`)}`,
       "",
@@ -108,7 +112,7 @@ class BoxManager {
       `${colors.muted("Tests")}     ${colors.primary.bold(String(results.total_tests))}`,
       `${colors.muted("Duration")}  ${colors.highlight.bold(duration + "s")}`,
       `${colors.muted("Result")}    ${statusColor.bold(statusText)}`,
-      `${colors.muted("Report")}    ${colors.link(reportPath)}`
+      `${colors.muted("Report")}    ${colors.link(displayReportPath)}`
     ].join("\n");
     
     return this.createBox(content, {

@@ -6,7 +6,7 @@ const { timestamp } = require("./helpers");
 
 class Reporter {
   constructor(reportDir) {
-    this.reportDir = reportDir;
+    this.reportDir = path.resolve(reportDir);
   }
 
   generateTextReport(results, targetUrl) {
@@ -41,9 +41,13 @@ class Reporter {
   }
 
   saveReport(results, targetUrl) {
+    if (!fs.existsSync(this.reportDir)) {
+      fs.mkdirSync(this.reportDir, { recursive: true });
+    }
+    
     const ts = timestamp();
     const textReport = this.generateTextReport(results, targetUrl);
-    const textPath = path.join(this.reportDir, `xss_report_${ts}.txt`);
+    const textPath = path.join(this.reportDir, `xss_report_${ts}.txt`).replace(/\\/g, "/");
     fs.writeFileSync(textPath, textReport);
     return { textPath };
   }
