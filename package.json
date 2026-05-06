@@ -6,6 +6,13 @@
   "bin": {
     "rav-xss": "src/index.js"
   },
+  "files": [
+    "src/",
+    "payloads/",
+    "config.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "scan": "node src/index.js",
     "configure": "node src/index.js --configure",

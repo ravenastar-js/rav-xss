@@ -12,9 +12,6 @@ const { Logger } = require("../utils/logger");
 const boxManager = require("../utils/box");
 const { Reporter } = require("../utils/reporter");
 
-/**
- * Mapeamento de categorias (TUDO em lowercase)
- */
 const CATEGORY_MAP = {
   "basic": ["🔰 Basic Payloads", "Standard HTML tags & events"],
   "filterevasion": ["🛡️  Filter Evasion", "Encoding, null bytes, obfuscation"],
@@ -60,13 +57,44 @@ class XSSScanner {
     this.reporter = new Reporter(this.config.scanner.report_dir);
   }
 
-  async loadPayloads() {
-    const categoryLower = this.category.toLowerCase();
-    const payloadFileName = `${categoryLower}.txt`;
-    const payloadPath = path.join(this.payloadsDir, this.category, payloadFileName);
+  /**
+   * Encontra o arquivo de payload na categoria
+   */
+  findPayloadFile(categoryDir) {
+    if (!fs.existsSync(categoryDir)) return null;
+    
+    const files = fs.readdirSync(categoryDir);
+    
+    const txtFile = files.find(f => f.endsWith(".txt"));
+    if (txtFile) return path.join(categoryDir, txtFile);
+    
+    return null;
+  }
 
-    if (!fs.existsSync(payloadPath)) {
-      throw new Error(`Payload file not found: ${payloadPath}`);
+  async loadPayloads() {
+    const categoryDir = path.join(this.payloadsDir, this.category);
+    
+    if (!fs.existsSync(categoryDir)) {
+      const availableCats = fs.existsSync(this.payloadsDir) 
+        ? fs.readdirSync(this.payloadsDir).filter(d => 
+            fs.statSync(path.join(this.payloadsDir, d)).isDirectory()
+          ).join(", ")
+        : "NONE";
+      
+      throw new Error(
+        `Category directory not found: ${categoryDir}\n` +
+        `Available categories: ${availableCats}`
+      );
+    }
+
+    const payloadPath = this.findPayloadFile(categoryDir);
+    
+    if (!payloadPath) {
+      const files = fs.readdirSync(categoryDir);
+      throw new Error(
+        `No .txt file found in ${categoryDir}\n` +
+        `Files found: ${files.join(", ") || "NONE"}`
+      );
     }
 
     this.payloads = fs.readFileSync(payloadPath, "utf8")
@@ -75,7 +103,7 @@ class XSSScanner {
       .filter(Boolean);
 
     if (this.payloads.length === 0) {
-      throw new Error("No payloads loaded. Check the file.");
+      throw new Error("No payloads loaded. File is empty.");
     }
   }
 
@@ -86,15 +114,11 @@ class XSSScanner {
 
         Logger.showBanner(this.config, 0, "Select category...", this.targetUrl || "Not set");
 
-        // CORRIGIDO: Usa this.payloadsDir em vez de process.cwd()
         if (!fs.existsSync(this.payloadsDir)) {
-          console.log(colors.error(`Payloads directory not found: ${this.payloadsDir}`));
-          console.log(colors.muted(`\nExpected location: ${this.payloadsDir}`));
-          console.log(colors.text(`\nMake sure the 'payloads' folder exists with subfolders like:`));
-          console.log(colors.muted(`  - Basic/basic.txt`));
-          console.log(colors.muted(`  - FilterEvasion/filterevasion.txt`));
-          console.log(colors.muted(`  - Polyglots/polyglots.txt`));
-          console.log(colors.muted(`  - WAFBypass/wafbypass.txt\n`));
+          console.log(colors.error(`\n  Payloads directory not found!`));
+          console.log(colors.muted(`  Expected: ${this.payloadsDir}\n`));
+          console.log(colors.text(`  Make sure the package was installed correctly.`));
+          console.log(colors.text(`  Try: npm uninstall -g rav-xss && npm install -g rav-xss\n`));
           process.exit(1);
         }
 
@@ -103,7 +127,8 @@ class XSSScanner {
           .map(dirent => dirent.name);
 
         if (folders.length === 0) {
-          console.log(colors.error("No payload categories found in payloads/"));
+          console.log(colors.error(`\n  No payload categories found in:`));
+          console.log(colors.muted(`  ${this.payloadsDir}\n`));
           process.exit(1);
         }
 
