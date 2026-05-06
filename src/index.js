@@ -13,7 +13,6 @@ const { colors } = require("./config/colors");
 
 /**
  * 📂 Abre a pasta de relatórios no explorador de arquivos
- * Usa o pacote 'open' para compatibilidade cross-platform
  */
 const openReportsFolder = async (reportDir) => {
   const resolvedPath = path.resolve(reportDir);
@@ -27,7 +26,6 @@ const openReportsFolder = async (reportDir) => {
       console.log(colors.success("✅ Reports folder created!"));
     } catch (err) {
       console.log(colors.error(`❌ Could not create folder: ${err.message}`));
-      console.log(colors.text(`📂 Reports location: ${colors.link(resolvedPath)}`));
       process.exit(1);
     }
   }
