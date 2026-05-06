@@ -6,7 +6,7 @@
 ---
 
 # 🛡️ RAV XSS
-### 🎯 Basic Reflected XSS scanner for bug bounty programs. 
+### 🎯 Basic Reflected XSS scanner for bug bounty programs.
 
 [![⭐ Stars](https://img.shields.io/github/stars/ravenastar-js/rav-xss?style=for-the-badge&label=%E2%AD%90%20Stars&color=2d7445&logo=star&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss/stargazers)
 [![🔱 Forks](https://img.shields.io/github/forks/ravenastar-js/rav-xss?style=for-the-badge&label=%F0%9F%94%B1%20Forks&color=2d7445&logo=git&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss/network/members)
@@ -36,23 +36,27 @@ Se precisar de ajuda ou quiser falar com a equipe, entre no nosso servidor de su
   - [🎯 Visão Geral](#-visão-geral)
     - [✨ Características Principais](#-características-principais)
   - [📦 Instalação Rápida](#-instalação-rápida)
-  - [🗑️ DESINSTALAR GLOBALMENTE](#️-desinstalar-globalmente)
+  - [🗑️ Desinstalar](#️-desinstalar)
   - [🛠️ Como Usar](#️-como-usar)
     - [Uso Básico](#uso-básico)
     - [Menu Interativo](#menu-interativo)
   - [🎛️ Opções da CLI](#️-opções-da-cli)
   - [📂 Categorias de Payloads](#-categorias-de-payloads)
+  - [📁 Abrir Pasta de Relatórios](#-abrir-pasta-de-relatórios)
   - [🚀 Exemplos Práticos](#-exemplos-práticos)
     - [1. Reconhecimento Básico](#1-reconhecimento-básico)
     - [2. Teste com WAF Bypass](#2-teste-com-waf-bypass)
     - [3. Delay Personalizado](#3-delay-personalizado)
     - [4. Modo Interativo](#4-modo-interativo)
+    - [5. Abrir Relatórios](#5-abrir-relatórios)
   - [📊 Relatórios](#-relatórios)
   - [⚙️ Configuração](#️-configuração)
     - [Wizard Interativo](#wizard-interativo)
-  - [⚠️ AVISO LEGAL](#️-aviso-legal)
+  - [⚠️ Aviso Legal](#️-aviso-legal)
   - [Star History](#star-history)
   - [Feito com 💚 por RavenaStar](#feito-com--por-ravenastar)
+
+---
 
 ## 🎯 Visão Geral
 
@@ -63,8 +67,11 @@ O **RAV XSS** é uma ferramenta básica para detecção de Reflected XSS, projet
 - 🖥️ **Menu interativo** — Seleção de categorias com setas do teclado
 - 🌐 **Detecção por reflexão** — Identifica payloads refletidos na resposta HTTP
 - 📊 **Relatórios detalhados** — Geração automática de reports
+- 📁 **Abrir relatórios** — Comando rápido para abrir a pasta de reports
 - ⚡ **Requisições concorrentes** — Scanning rápido e configurável
 - 🎨 **Interface colorida** — Banner ASCII art e boxes estilizados
+
+---
 
 ## 📦 Instalação Rápida
 
@@ -88,13 +95,17 @@ cd rav-xss
 npm install
 ```
 
-## 🗑️ DESINSTALAR GLOBALMENTE
+---
+
+## 🗑️ Desinstalar
 
 ```
 npm un -g rav-xss         # ✅ Recomendado
 npm uninstall -g rav-xss  # ✅ Completo
 npm remove -g rav-xss     # ✅ Alternativo
 ```
+
+---
 
 ## 🛠️ Como Usar
 
@@ -103,13 +114,16 @@ npm remove -g rav-xss     # ✅ Alternativo
 ```
 # Modo interativo (recomendado)
 rav-xss
-npm run scan
 
 # Com argumentos CLI
 rav-xss --url "https://example.com/page?q=[XSS]" --category Basic
 
 # Com verbose para debug
 rav-xss --url "https://example.com/page?q=[XSS]" --category Basic --verbose
+
+# Abrir pasta de relatórios
+rav-xss --open-reports
+rav-xss -r
 ```
 
 ### Menu Interativo
@@ -129,16 +143,21 @@ Ao executar sem argumentos, você verá:
    ❌  Exit
 ```
 
+---
+
 ## 🎛️ Opções da CLI
 
 | Opção | Atalho | Descrição | Padrão |
-|-------|---------|-----------|---------|
+|-------|--------|-----------|--------|
 | `--url` | - | 🌐 URL alvo com placeholder `[XSS]` | - |
 | `--category` | - | 📂 Categoria de payloads | - |
 | `--delay` | - | ⏱️ Delay entre requisições (ms) | `500` |
 | `--verbose` | `-v` | 📢 Log detalhado | `false` |
 | `--help` | `-h` | ❓ Mostrar ajuda | - |
 | `--configure` | - | ⚙️ Wizard de configuração | - |
+| `--open-reports` | `-r` | 📁 Abrir pasta de relatórios | - |
+
+---
 
 ## 📂 Categorias de Payloads
 
@@ -148,6 +167,31 @@ Ao executar sem argumentos, você verá:
 | 🛡️ **Filter Evasion** | Encoding, null bytes, obfuscation |
 | 🎭 **Polyglots** | Multi-context payloads |
 | 🔥 **WAF Bypass** | Cloudflare, ModSecurity evasion |
+
+---
+
+## 📁 Abrir Pasta de Relatórios
+
+Após executar os scans, você pode abrir rapidamente a pasta de relatórios:
+
+```
+# Abre a pasta reports no explorador de arquivos
+rav-xss --open-reports
+
+# Atalho
+rav-xss -r
+```
+
+**Comportamento por sistema:**
+| Sistema | Ação |
+|---------|------|
+| 🪟 Windows | Abre o Explorer na pasta `reports/` |
+| 🍎 macOS | Abre o Finder na pasta `reports/` |
+| 🐧 Linux | Abre o gerenciador de arquivos padrão |
+
+> 💡 Se a pasta `reports/` ainda não existir, ela será criada automaticamente.
+
+---
 
 ## 🚀 Exemplos Práticos
 
@@ -173,8 +217,17 @@ rav-xss --url "https://example.com/search?q=[XSS]" --category FilterEvasion --de
 
 ```
 rav-xss
-# Selecionar categoria com setas -> Enter -> Digitar URL -> Escanear
+# Selecionar categoria com setas → Enter → Digitar URL → Escanear
 ```
+
+### 5. Abrir Relatórios
+
+```
+rav-xss -r
+# Abre a pasta com todos os reports gerados
+```
+
+---
 
 ## 📊 Relatórios
 
@@ -185,6 +238,8 @@ reports/
 └── xss_report_2026-05-06T12-00-00-000Z.txt
 ```
 
+---
+
 ## ⚙️ Configuração
 
 ### Wizard Interativo
@@ -194,7 +249,9 @@ rav-xss --configure
 npm run configure
 ```
 
-## ⚠️ AVISO LEGAL
+---
+
+## ⚠️ Aviso Legal
 
 Esta ferramenta é destinada para:
 
