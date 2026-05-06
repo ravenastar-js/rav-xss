@@ -6,7 +6,7 @@
 ---
 
 # 🛡️ RAV XSS
-### 🎯 Ferramenta básica de teste de XSS para Bug Bounty
+### 🎯 Ferramenta básica para detecção de Reflected XSS, projetada para programas de Bug Bounty.
 
 [![⭐ Stars](https://img.shields.io/github/stars/ravenastar-js/rav-xss?style=for-the-badge&label=%E2%AD%90%20Stars&color=2d7445&logo=star&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss/stargazers)
 [![🔱 Forks](https://img.shields.io/github/forks/ravenastar-js/rav-xss?style=for-the-badge&label=%F0%9F%94%B1%20Forks&color=2d7445&logo=git&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss/network/members)
@@ -33,7 +33,7 @@ Se precisar de ajuda ou quiser falar com a equipe, entre no nosso servidor de su
 
 ## 📋 Índice
 - [🛡️ RAV XSS](#️-rav-xss)
-    - [🎯 Ferramenta básica de teste de XSS para Bug Bounty](#-ferramenta-básica-de-teste-de-xss-para-bug-bounty)
+    - [🎯 Ferramenta básica para detecção de Reflected XSS, projetada para programas de Bug Bounty.](#-ferramenta-básica-para-detecção-de-reflected-xss-projetada-para-programas-de-bug-bounty)
   - [📞 Suporte](#-suporte)
   - [📋 Índice](#-índice)
   - [🎯 Visão Geral](#-visão-geral)
