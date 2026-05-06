@@ -41,16 +41,16 @@ class XSSScanner {
   }
 
   async initialize() {
-    if (!this.targetUrl) {
+    if (!this.category) {
+      await this.showMainMenu();
+    }
+
+    if (!this.targetUrl || !this.targetUrl.includes("[XSS]")) {
       await this.promptForUrl();
     }
 
     if (!this.targetUrl || !this.targetUrl.includes("[XSS]")) {
       throw new Error("A target URL with [XSS] placeholder must be provided");
-    }
-
-    if (!this.category) {
-      await this.showMainMenu();
     }
 
     await this.loadPayloads();
@@ -82,7 +82,7 @@ class XSSScanner {
       try {
         console.clear();
 
-        Logger.showBanner(this.config, 0, "Select category...", this.targetUrl);
+        Logger.showBanner(this.config, 0, "Select category...", this.targetUrl || "Not set");
 
         const payloadsDir = path.join(process.cwd(), "payloads");
 
@@ -131,7 +131,6 @@ class XSSScanner {
           }
         );
 
-
         const { action } = await inquirer.prompt([
           {
             type: "list",
@@ -150,8 +149,14 @@ class XSSScanner {
           process.exit(0);
         } else if (action === "config_url") {
           await this.promptForUrl();
+          continue;
         } else {
           this.category = action;
+          
+          if (this.targetUrl && this.targetUrl.includes("[XSS]")) {
+            return;
+          }
+          
           return;
         }
 
@@ -169,7 +174,7 @@ class XSSScanner {
 
   async promptForUrl() {
     console.clear();
-    Logger.showBanner(this.config, 0, "Configure Target", this.targetUrl || "Not set");
+    Logger.showBanner(this.config, 0, this.category || "Not selected", this.targetUrl || "Not set");
 
     console.log(colors.primary.bold("\n  🌐 CONFIGURE TARGET URL\n"));
     console.log(colors.muted("  Enter the URL with [XSS] as placeholder for the payload\n"));
