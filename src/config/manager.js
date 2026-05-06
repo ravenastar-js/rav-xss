@@ -2,11 +2,12 @@
 
 const fs = require("fs");
 const path = require("path");
+const packageInfo = require("../utils/packageInfo");
 
 const CONFIG_PATH = path.join(process.cwd(), "config.json");
 
 const getDefaultConfig = () => ({
-  version: "1.0.0",
+  version: packageInfo.version,
   targets: [],
   scanner: {
     user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",

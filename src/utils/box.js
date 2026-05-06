@@ -2,15 +2,15 @@
 
 const boxen = require("boxen");
 const { colors, theme } = require("../config/colors");
+const packageInfo = require("./packageInfo");
 
 /**
  * 📦 Box Manager - Cria caixas estilizadas para o RAV XSS
  */
 class BoxManager {
-  constructor() {
-    this.appName = "RAV XSS";
-    this.appVersion = "1.0.0";
-    this.appUrl = "https://ravenastar.com";
+
+  get appInfo() {
+    return packageInfo.allInfo;
   }
 
   createBox(content, options = {}) {
@@ -32,45 +32,51 @@ class BoxManager {
   }
 
   createWelcomeBox(config, totalPayloads, category, targetUrl) {
-    const version = config?.version || this.appVersion;
-    
+    const version = packageInfo.version || "V1";
     const contentLines = [];
+    
+    contentLines.push(colors.info.bold("🛡️  Bug Bounty Edition"));
+    contentLines.push(colors.dim("─".repeat(45)));
+    contentLines.push("");
     
     try {
       const figlet = require("figlet");
-      const bannerText = figlet.textSync("RAV XSS", {
+      const bannerText = figlet.textSync(packageInfo.name.toUpperCase(), {
         font: "ANSI Shadow",
         horizontalLayout: "default",
         verticalLayout: "default"
       });
       contentLines.push(colors.action(bannerText));
     } catch (e) {
-      contentLines.push(colors.action.bold("⚡ RAV XSS ⚡"));
+      contentLines.push(colors.action.bold(`⚡ ${packageInfo.name.toUpperCase()} ⚡`));
     }
     
     contentLines.push("");
-    contentLines.push(`${colors.icon.link} ${colors.link(this.appUrl)}`);
+    contentLines.push(`${colors.icon.link} ${colors.link(packageInfo.site)}`);
     contentLines.push("");
     
     const infoItems = [
       `${colors.icon.version} ${colors.muted("Version:")} ${colors.primary.bold(version)}`,
       `${colors.icon.payload} ${colors.muted("Payloads:")} ${colors.primary.bold(String(totalPayloads))}`,
-      `${colors.icon.category} ${colors.muted("Category:")} ${colors.highlight(category || "Not selected")}\n`,
+      `${colors.icon.category} ${colors.muted("Category:")} ${colors.highlight(category || "Not selected")}`,
       `${colors.icon.target} ${colors.muted("Target:")} ${colors.url(this.truncateUrl(targetUrl))}`
     ];
     
-    contentLines.push(infoItems.join(`  ${colors.dim("│")}  `));
+    contentLines.push(infoItems.join(`\n`));
     
     const content = contentLines.join("\n");
     
     return this.createBox(content, {
       borderStyle: "round",
       borderColor: theme.border.primary,
-      padding: 2,
+      padding: {
+        top: 1,
+        bottom: 2,
+        left: 3,
+        right: 3
+      },
       margin: 1,
-      textAlignment: "center",
-      title: colors.info("🛡️  Bug Bounty Edition"),
-      titleAlignment: "center"
+      textAlignment: "center"
     });
   }
 
@@ -117,10 +123,12 @@ class BoxManager {
     const content = [
       colors.highlight.bold("👋 GOODBYE!"),
       "",
-      colors.text("XSS Bounty Scanner"),
+      colors.text(packageInfo.name),
       colors.muted("Authorized testing only"),
       "",
-      `${colors.icon.link} ${colors.link(this.appUrl)}`
+      `${colors.text("Feito com")} ${colors.danger("💚")} ${colors.text("por")} ${colors.primary.bold(packageInfo.wuser)}`,
+      "",
+      `${colors.icon.link} ${colors.link(packageInfo.site)}`
     ].join("\n");
     
     return this.createBox(content, {

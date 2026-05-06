@@ -2,6 +2,7 @@
 
 const { colors } = require("../config/colors");
 const boxManager = require("./box");
+const packageInfo = require("./packageInfo");
 
 /**
  * 📝 Logger - Sistema de logging
