@@ -91,6 +91,7 @@ class BoxManager {
     });
   }
 
+
   createResultBox(results, targetUrl, category, duration, reportPath, reportDir) {
     const hasVulns = results.vulns_found > 0;
     const statusIcon = hasVulns ? colors.icon.error : colors.icon.success;
@@ -101,7 +102,7 @@ class BoxManager {
       ? "..." + reportPath.substring(reportPath.length - 42)
       : reportPath;
     
-    const content = [
+    const contentLines = [
       `${colors.action.bold(`${statusIcon}  SCAN COMPLETE`)}`,
       "",
       `${colors.muted("Target")}    ${colors.url(this.truncateUrl(targetUrl))}`,
@@ -118,18 +119,18 @@ class BoxManager {
       `${colors.action.bold("  rav-xss --open-reports")}`,
       `${colors.muted("  or")}`,
       `${colors.action.bold("  rav-xss -r")}`,
-    ].join("\n");
+    ];
     
     if (reportDir) {
       const displayDir = reportDir.length > 50 
         ? "..." + reportDir.substring(reportDir.length - 47)
         : reportDir;
-      content.push("");
-      content.push(`${colors.muted("📂 Reports folder:")}`);
-      content.push(`${colors.dim(displayDir)}`);
+      contentLines.push("");
+      contentLines.push(`${colors.muted("📂 Reports folder:")}`);
+      contentLines.push(`${colors.dim(displayDir)}`);
     }
     
-    return this.createBox(content.join("\n"), {
+    return this.createBox(contentLines.join("\n"), {
       borderStyle: "double",
       padding: 2,
       margin: { top: 2, bottom: 1 },
