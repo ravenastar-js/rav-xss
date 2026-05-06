@@ -6,7 +6,7 @@
 ---
 
 # 🛡️ RAV XSS
-### 🎯 Ferramenta básica para detecção de Reflected XSS, projetada para programas de Bug Bounty.
+### 🎯 Basic Reflected XSS scanner for bug bounty programs. 
 
 [![⭐ Stars](https://img.shields.io/github/stars/ravenastar-js/rav-xss?style=for-the-badge&label=%E2%AD%90%20Stars&color=2d7445&logo=star&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss/stargazers)
 [![🔱 Forks](https://img.shields.io/github/forks/ravenastar-js/rav-xss?style=for-the-badge&label=%F0%9F%94%B1%20Forks&color=2d7445&logo=git&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss/network/members)
@@ -15,9 +15,6 @@
 [![🕒 Last Commit](https://img.shields.io/github/last-commit/ravenastar-js/rav-xss?style=for-the-badge&label=%F0%9F%95%92%20Last%20Commit&color=2d7445&logo=clock&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss/commits/main)
 [![📦 Repo Size](https://img.shields.io/github/repo-size/ravenastar-js/rav-xss?style=for-the-badge&label=%F0%9F%93%A6%20Repo%20Size&color=2d7445&logo=database&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss)
 [![⚙️ Node.js](https://img.shields.io/badge/%E2%9A%99%EF%B8%8F%20Node.js-14.0%2B-green?style=for-the-badge&logo=nodedotjs&color=2d7445&logoColor=white&labelColor=444&radius=10)](https://nodejs.org/pt/download)
-
-
-*CLI interativa para detecção de Reflected XSS com payloads categorizados*
 
 ---
 
@@ -33,7 +30,7 @@ Se precisar de ajuda ou quiser falar com a equipe, entre no nosso servidor de su
 
 ## 📋 Índice
 - [🛡️ RAV XSS](#️-rav-xss)
-    - [🎯 Ferramenta básica para detecção de Reflected XSS, projetada para programas de Bug Bounty.](#-ferramenta-básica-para-detecção-de-reflected-xss-projetada-para-programas-de-bug-bounty)
+    - [🎯 Basic Reflected XSS scanner for bug bounty programs.](#-basic-reflected-xss-scanner-for-bug-bounty-programs)
   - [📞 Suporte](#-suporte)
   - [📋 Índice](#-índice)
   - [🎯 Visão Geral](#-visão-geral)
@@ -54,6 +51,7 @@ Se precisar de ajuda ou quiser falar com a equipe, entre no nosso servidor de su
   - [⚙️ Configuração](#️-configuração)
     - [Wizard Interativo](#wizard-interativo)
   - [⚠️ AVISO LEGAL](#️-aviso-legal)
+  - [Star History](#star-history)
   - [Feito com 💚 por RavenaStar](#feito-com--por-ravenastar)
 
 ## 🎯 Visão Geral
@@ -213,6 +211,18 @@ Esta ferramenta é destinada para:
 > This tool is provided for educational and authorized security testing purposes only. Users are solely responsible for complying with all applicable laws and regulations. The authors assume no liability for misuse or damage caused by this tool.
 
 **Ao usar esta ferramenta, você concorda em usá-la apenas em sistemas que está autorizado a testar.**
+
+---
+
+## Star History
+
+<a href="https://www.star-history.com/#ravenastar-js/rav-xss&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ravenastar-js/rav-xss&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ravenastar-js/rav-xss&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ravenastar-js/rav-xss&type=Date" />
+ </picture>
+</a>
 
 ---
 
