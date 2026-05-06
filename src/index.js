@@ -11,9 +11,6 @@ const { loadConfig, validateConfig } = require("./config/manager");
 const { XSSScanner } = require("./core/scanner");
 const { colors } = require("./config/colors");
 
-/**
- * 📂 Abre a pasta de relatórios no explorador de arquivos
- */
 const openReportsFolder = (reportDir) => {
   const resolvedPath = path.resolve(reportDir);
   
@@ -34,12 +31,10 @@ const openReportsFolder = (reportDir) => {
   
   if (platform === "win32") {
     exec(`explorer "${resolvedPath}"`);
-    
     setTimeout(() => {
       console.log(colors.success("✅ Reports folder opened!"));
       process.exit(0);
     }, 500);
-    
   } else if (platform === "darwin") {
     exec(`open "${resolvedPath}"`, (error) => {
       if (error) {

@@ -4,7 +4,8 @@ const fs = require("fs");
 const path = require("path");
 const packageInfo = require("../utils/packageInfo");
 
-const CONFIG_PATH = path.join(process.cwd(), "config.json");
+const BASE_DIR = path.join(__dirname, "..", "..");
+const CONFIG_PATH = path.join(BASE_DIR, "config.json");
 
 const getDefaultConfig = () => ({
   version: packageInfo.version,
@@ -13,7 +14,7 @@ const getDefaultConfig = () => ({
     user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     timeout_ms: 8000,
     delay_between_requests_ms: 500,
-    report_dir: "./reports"
+    report_dir: path.join(BASE_DIR, "reports")
   },
   output: {
     verbose: false,
@@ -29,7 +30,11 @@ const loadConfig = () => {
   }
   try {
     const config = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
-    return { ...getDefaultConfig(), ...config };
+    const merged = { ...getDefaultConfig(), ...config };
+    if (!path.isAbsolute(merged.scanner.report_dir)) {
+      merged.scanner.report_dir = path.join(BASE_DIR, merged.scanner.report_dir);
+    }
+    return merged;
   } catch (err) {
     console.error(`Error loading config: ${err.message}`);
     return getDefaultConfig();
@@ -50,8 +55,10 @@ const validateConfig = (config) => {
     }
   }
 
-  if (!fs.existsSync(config.scanner.report_dir)) {
-    fs.mkdirSync(config.scanner.report_dir, { recursive: true });
+
+  const reportDir = config.scanner.report_dir;
+  if (!fs.existsSync(reportDir)) {
+    fs.mkdirSync(reportDir, { recursive: true });
   }
   return true;
 };

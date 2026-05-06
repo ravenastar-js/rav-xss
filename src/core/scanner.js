@@ -35,7 +35,7 @@ class XSSScanner {
       findings: []
     };
     this.reporter = null;
-    
+
     this.payloadsDir = path.join(__dirname, "..", "..", "payloads");
   }
 
@@ -62,25 +62,25 @@ class XSSScanner {
    */
   findPayloadFile(categoryDir) {
     if (!fs.existsSync(categoryDir)) return null;
-    
+
     const files = fs.readdirSync(categoryDir);
-    
+
     const txtFile = files.find(f => f.endsWith(".txt"));
     if (txtFile) return path.join(categoryDir, txtFile);
-    
+
     return null;
   }
 
   async loadPayloads() {
     const categoryDir = path.join(this.payloadsDir, this.category);
-    
+
     if (!fs.existsSync(categoryDir)) {
-      const availableCats = fs.existsSync(this.payloadsDir) 
-        ? fs.readdirSync(this.payloadsDir).filter(d => 
-            fs.statSync(path.join(this.payloadsDir, d)).isDirectory()
-          ).join(", ")
+      const availableCats = fs.existsSync(this.payloadsDir)
+        ? fs.readdirSync(this.payloadsDir).filter(d =>
+          fs.statSync(path.join(this.payloadsDir, d)).isDirectory()
+        ).join(", ")
         : "NONE";
-      
+
       throw new Error(
         `Category directory not found: ${categoryDir}\n` +
         `Available categories: ${availableCats}`
@@ -88,7 +88,7 @@ class XSSScanner {
     }
 
     const payloadPath = this.findPayloadFile(categoryDir);
-    
+
     if (!payloadPath) {
       const files = fs.readdirSync(categoryDir);
       throw new Error(
@@ -184,11 +184,11 @@ class XSSScanner {
           continue;
         } else {
           this.category = action;
-          
+
           if (this.targetUrl && this.targetUrl.includes("[XSS]")) {
             return;
           }
-          
+
           return;
         }
 
@@ -255,7 +255,7 @@ class XSSScanner {
     return { payload, url, vulnerable, index: index + 1 };
   }
 
-    async run() {
+  async run() {
     await this.initialize();
     this.results.scan_start = new Date().toISOString();
 
@@ -335,12 +335,12 @@ class XSSScanner {
     const duration = ((new Date(this.results.scan_end) - new Date(this.results.scan_start)) / 1000).toFixed(1);
 
     Logger.showResults(
-      this.results, 
-      this.targetUrl, 
-      this.category, 
-      duration, 
+      this.results,
+      this.targetUrl,
+      this.category,
+      duration,
       displayPath,
-      this.config.scanner.report_dir
+      this.reporter.reportDir
     );
 
     process.exit(this.results.vulns_found > 0 ? 1 : 0);
@@ -353,27 +353,24 @@ class XSSScanner {
    */
   formatReportPath(absolutePath) {
     const normalized = absolutePath.replace(/\\/g, "/");
+
+    const packageBase = path.join(__dirname, "..", "..").replace(/\\/g, "/");
+
+    if (normalized.startsWith(packageBase)) {
+      let relative = normalized.substring(packageBase.length);
+      if (relative.startsWith("/")) relative = relative.substring(1);
+      return `[package]/${relative}`;
+    }
+
     const cwd = process.cwd().replace(/\\/g, "/");
-    
     if (normalized.startsWith(cwd)) {
       let relative = normalized.substring(cwd.length);
       if (relative.startsWith("/")) relative = relative.substring(1);
       return `./${relative}`;
     }
-    
-    const nodeModulesIndex = normalized.indexOf("node_modules/rav-xss/");
-    if (nodeModulesIndex !== -1) {
-      const simplified = normalized.substring(nodeModulesIndex + "node_modules/".length);
-      const localNodeModules = path.join(process.cwd(), "node_modules").replace(/\\/g, "/");
-      if (normalized.startsWith(localNodeModules)) {
-        return `./node_modules/${simplified}`;
-      }
-      return normalized;
-    }
-    
+
     return normalized;
   }
-
   truncateUrl(url, maxLength = 55) {
     if (!url) return "N/A";
     if (url.length <= maxLength) return url;

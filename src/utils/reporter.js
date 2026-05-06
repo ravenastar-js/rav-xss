@@ -44,7 +44,7 @@ class Reporter {
     if (!fs.existsSync(this.reportDir)) {
       fs.mkdirSync(this.reportDir, { recursive: true });
     }
-    
+
     const ts = timestamp();
     const textReport = this.generateTextReport(results, targetUrl);
     const textPath = path.join(this.reportDir, `xss_report_${ts}.txt`).replace(/\\/g, "/");
