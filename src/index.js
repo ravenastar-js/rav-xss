@@ -3,11 +3,13 @@
 
 const { exec } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 const { parseArgs, hasHelp, shouldConfigure, shouldOpenReports } = require("./cli/args");
 const { showHelp } = require("./cli/help");
 const { runWizard } = require("./cli/wizard");
 const { loadConfig, validateConfig } = require("./config/manager");
 const { XSSScanner } = require("./core/scanner");
+const { colors } = require("./config/colors");
 
 /**
  * Abre a pasta de relatórios no explorador de arquivos
@@ -15,13 +17,19 @@ const { XSSScanner } = require("./core/scanner");
 const openReportsFolder = (reportDir) => {
   const resolvedPath = path.resolve(reportDir);
   
-  console.log(`\n📂 Opening reports folder: ${resolvedPath}\n`);
+  console.log(`\n${colors.text("📂 Opening reports folder:")} ${colors.link(resolvedPath)}\n`);
+  
+  if (!fs.existsSync(resolvedPath)) {
+    console.log(colors.warning(`⚠️  Reports folder doesn't exist yet. Creating...`));
+    fs.mkdirSync(resolvedPath, { recursive: true });
+    console.log(colors.success(`✅ Reports folder created!`));
+  }
   
   const platform = process.platform;
   let command;
   
   if (platform === "win32") {
-    command = `explorer "${resolvedPath}"`;
+    command = `explorer ${resolvedPath}`;
   } else if (platform === "darwin") {
     command = `open "${resolvedPath}"`;
   } else {
@@ -30,10 +38,11 @@ const openReportsFolder = (reportDir) => {
   
   exec(command, (error) => {
     if (error) {
-      console.log(`❌ Could not open folder: ${error.message}`);
-      console.log(`📂 Reports location: ${resolvedPath}`);
+      console.log(colors.error(`❌ Could not open folder automatically.`));
+      console.log(colors.text(`📂 Reports location: ${colors.link(resolvedPath)}`));
+      console.log(colors.muted(`\n  You can open it manually or run a scan first.`));
     } else {
-      console.log(`✅ Reports folder opened!`);
+      console.log(colors.success(`✅ Reports folder opened!`));
     }
     process.exit(0);
   });
