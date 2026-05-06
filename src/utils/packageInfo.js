@@ -19,16 +19,19 @@ class PackageInfo {
   loadPackageInfo() {
     try {
       const possiblePaths = [
-        path.join(process.cwd(), "package.json"),
         path.join(__dirname, "..", "..", "package.json"),
         path.join(__dirname, "..", "package.json"),
+        path.join(process.cwd(), "package.json"),
         path.join(__dirname, "package.json"),
       ];
 
       let packagePath = null;
       let packageJson = null;
 
+      const triedPaths = [];
+
       for (const testPath of possiblePaths) {
+        triedPaths.push(testPath);
         if (fs.existsSync(testPath)) {
           packagePath = testPath;
           packageJson = fs.readFileSync(testPath, "utf8");
@@ -37,7 +40,11 @@ class PackageInfo {
       }
 
       if (!packagePath || !packageJson) {
-        throw new Error("package.json not found in any expected location");
+        throw new Error(
+          `package.json not found!\n` +
+          `Tried paths:\n` +
+          triedPaths.map(p => `  - ${p} (${fs.existsSync(p) ? 'EXISTS' : 'NOT FOUND'})`).join("\n")
+        );
       }
 
       const data = JSON.parse(packageJson);
@@ -53,7 +60,9 @@ class PackageInfo {
         homepage: data.homepage || "https://github.com/ravenastar-js/rav-xss/"
       };
     } catch (error) {
-      console.error("❌ Erro ao carregar package.json:", error.message);
+      if (process.argv.includes("--verbose") || process.env.NODE_ENV === "development") {
+        console.error("❌ Erro ao carregar package.json:", error.message);
+      }
       return this.getFallbackInfo();
     }
   }
@@ -73,6 +82,14 @@ class PackageInfo {
       license: "MIT",
       homepage: "https://github.com/ravenastar-js/rav-xss/"
     };
+  }
+
+  /**
+   * Força recarregar do disco (útil se o package.json foi atualizado)
+   */
+  reload() {
+    this.packageData = this.loadPackageInfo();
+    return this.packageData;
   }
 
   /**
@@ -154,18 +171,18 @@ class PackageInfo {
   get debugPath() {
     try {
       const possiblePaths = [
-        path.join(process.cwd(), "package.json"),
         path.join(__dirname, "..", "..", "package.json"),
         path.join(__dirname, "..", "package.json"),
+        path.join(process.cwd(), "package.json"),
         path.join(__dirname, "package.json"),
       ];
 
       for (const testPath of possiblePaths) {
         if (fs.existsSync(testPath)) {
-          return testPath;
+          return `FOUND: ${testPath}`;
         }
       }
-      return "NOT FOUND";
+      return "NOT FOUND in any path";
     } catch (e) {
       return "ERROR: " + e.message;
     }
