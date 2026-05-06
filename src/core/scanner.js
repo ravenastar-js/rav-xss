@@ -38,6 +38,8 @@ class XSSScanner {
       findings: []
     };
     this.reporter = null;
+    
+    this.payloadsDir = path.join(__dirname, "..", "..", "payloads");
   }
 
   async initialize() {
@@ -61,7 +63,7 @@ class XSSScanner {
   async loadPayloads() {
     const categoryLower = this.category.toLowerCase();
     const payloadFileName = `${categoryLower}.txt`;
-    const payloadPath = path.join(process.cwd(), "payloads", this.category, payloadFileName);
+    const payloadPath = path.join(this.payloadsDir, this.category, payloadFileName);
 
     if (!fs.existsSync(payloadPath)) {
       throw new Error(`Payload file not found: ${payloadPath}`);
@@ -84,19 +86,24 @@ class XSSScanner {
 
         Logger.showBanner(this.config, 0, "Select category...", this.targetUrl || "Not set");
 
-        const payloadsDir = path.join(process.cwd(), "payloads");
-
-        if (!fs.existsSync(payloadsDir)) {
-          console.log(colors.error("Payloads directory not found!"));
+        // CORRIGIDO: Usa this.payloadsDir em vez de process.cwd()
+        if (!fs.existsSync(this.payloadsDir)) {
+          console.log(colors.error(`Payloads directory not found: ${this.payloadsDir}`));
+          console.log(colors.muted(`\nExpected location: ${this.payloadsDir}`));
+          console.log(colors.text(`\nMake sure the 'payloads' folder exists with subfolders like:`));
+          console.log(colors.muted(`  - Basic/basic.txt`));
+          console.log(colors.muted(`  - FilterEvasion/filterevasion.txt`));
+          console.log(colors.muted(`  - Polyglots/polyglots.txt`));
+          console.log(colors.muted(`  - WAFBypass/wafbypass.txt\n`));
           process.exit(1);
         }
 
-        const folders = fs.readdirSync(payloadsDir, { withFileTypes: true })
+        const folders = fs.readdirSync(this.payloadsDir, { withFileTypes: true })
           .filter(dirent => dirent.isDirectory())
           .map(dirent => dirent.name);
 
         if (folders.length === 0) {
-          console.log(colors.error("No payload categories found in ./payloads/"));
+          console.log(colors.error("No payload categories found in payloads/"));
           process.exit(1);
         }
 
