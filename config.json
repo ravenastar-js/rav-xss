@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "scanner": {
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "timeout_ms": 8000,
+    "delay_between_requests_ms": 500,
+    "report_dir": "./reports"
+  },
+  "targets": [
+    {
+      "name": "Default Target",
+      "url": "http://www.sudo.co.il/xss/level0.php?email=[XSS]",
+      "notes": "Example target"
+    }
+  ],
+  "output": {
+    "verbose": false,
+    "show_safe": false
+  }
+}

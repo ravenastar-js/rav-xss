@@ -1,0 +1,30 @@
+{
+  "name": "rav-xss",
+  "version": "1.0.0",
+  "description": "Reflected XSS scanner for bug bounty programs – modular category-based payloads",
+  "main": "src/index.js",
+  "scripts": {
+    "scan": "node src/index.js",
+    "configure": "node src/index.js --configure",
+    "dev": "node src/index.js --verbose"
+  },
+  "keywords": [
+    "xss",
+    "security",
+    "bug-bounty",
+    "scanner",
+    "reflected-xss",
+    "rav-xss",
+    "ravenastar"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "chalk": "^4.1.2",
+    "boxen": "^5.1.2",
+    "figlet": "^1.7.0",
+    "inquirer": "^8.2.6",
+    "ora": "^5.4.1"
+  }
+}

@@ -1,0 +1,74 @@
+# Código fonte (apenas dist/build vai para o pacote)
+src/
+payloads/
+
+# Configurações de desenvolvimento
+.eslintrc.js
+.eslintrc.json
+.eslintignore
+.prettierrc
+.prettierignore
+.editorconfig
+.babelrc
+.browserslistrc
+
+# Testes
+tests/
+__tests__/
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/
+jest.config.js
+
+# Ambiente
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Relatórios
+reports/
+
+# Sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDEs e editores
+.git/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.sass-cache/
+
+# CI/CD
+.github/
+.travis.yml
+.gitlab-ci.yml
+.circleci/
+
+# Arquivos temporários
+tmp/
+temp/
+*.tmp
+
+# Configurações locais
+config.local.json
+
+# Arquivos de lock (apenas package.json é necessário)
+yarn.lock
+pnpm-lock.yaml
