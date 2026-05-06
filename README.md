@@ -56,7 +56,7 @@ Se precisar de ajuda ou quiser falar com a equipe, entre no nosso servidor de su
 
 ## 🎯 Visão Geral
 
-O **RAV XSS** é uma ferramenta de linha de comando interativa para detecção de Reflected XSS, projetada para programas de Bug Bounty.
+O **RAV XSS** é uma ferramenta básica para detecção de Reflected XSS, projetada para programas de Bug Bounty.
 
 ### ✨ Características Principais
 - 🎯 **Categorias organizadas** — Payloads separados por tipo de ataque
@@ -125,7 +125,7 @@ Ao executar sem argumentos, você verá:
    🎭 Polyglots  —  Multi-context payloads
    🔥 WAF Bypass  —  Cloudflare, ModSecurity evasion
   ───────────────────────────────────────────────────────
-   🔧  Configure Target URL
+   🎯  Configure Target URL
    ❌  Exit
 ```
 
