@@ -665,6 +665,7 @@ class XSSScanner {
 
   /**
    * 📄 Formata o caminho do relatório para exibição
+   * Exibe caminho completo no Termux
    * @param {string} absolutePath - Caminho absoluto do relatório
    * @returns {string} Caminho formatado
    */
