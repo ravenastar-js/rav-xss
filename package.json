@@ -1,6 +1,6 @@
 {
   "name": "rav-xss",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "⚙️ CLI/NPM | RAV XSS | 🎯 Basic Reflected XSS scanner for bug bounty programs.",
   "main": "src/index.js",
   "bin": {
