@@ -162,11 +162,11 @@ class XSSScanner {
 
     Logger.showBanner(this.config, 0, this.category, this.targetUrl || demoUrl);
 
-    console.log(colors.primary.bold("\n  🌐 CONFIGURE TARGET URL\n"));
+    console.log(colors.link2.bold("\n  ⚙  CONFIGURE TARGET URL\n"));
     console.log(colors.muted("  Enter the URL with [XSS] as placeholder for the payload\n"));
     console.log(colors.text("  💡 Demo target: ") + colors.link(demoUrl));
     console.log(colors.muted(`  (${demoName} - public XSS testing page)\n`));
-    console.log(colors.highlight(`  🔄 Mode: ${this.mode === "playwright" ? "🎭 Playwright" : "🌐 Axios"}\n`));
+    console.log(colors.highlight(`  ✸ Mode: ${this.mode === "playwright" ? "🌐 Playwright" : "⚡ Axios"}\n`));
 
     const { url } = await inquirer.prompt([
       {
@@ -565,10 +565,10 @@ class XSSScanner {
 
     console.clear();
 
-    const displayMode = this.mode === "playwright" ? "🎭 Playwright" : "🌐 Axios";
+    const displayMode = this.mode === "playwright" ? "🌐 Playwright" : "⚡ Axios";
     Logger.showBanner(this.config, this.payloads.length, this.category, this.targetUrl);
 
-    console.log(colors.highlight(`\n  🔄 Mode: ${displayMode}\n`));
+    console.log(colors.highlight(`\n  ✸ Mode: ${displayMode}\n`));
 
     Logger.log("info",
       `Testing ${colors.primary.bold(String(this.payloads.length))} payloads from ${colors.highlight.bold(this.category)} category\n`

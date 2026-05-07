@@ -10,12 +10,13 @@ const colors = {
     primary: chalk.hex("#06D6A0"),
     success: chalk.hex("#57f287"),
     action: chalk.hex("#4ECDC4"),
-    action2:chalk.hex("#4ECDC4"),
+    action2: chalk.hex("#4ECDC4"),
     highlight: chalk.hex("#FFD166"),
     highlight2: chalk.hex("#F8E789"),
     warning: chalk.hex("#FF9E64"),
     info: chalk.hex("#67d1f5"),
     link: chalk.hex("#8AD4FF").underline,
+    link2: chalk.hex("#8AD4FF"),
     accent: chalk.hex("#4CC9F0"),
     danger: chalk.hex("#FF9999"),
     error: chalk.hex("#F72585"),
@@ -32,14 +33,14 @@ const colors = {
     up: chalk.hex("#57f287"),
     down: chalk.hex("#FF9999"),
     stable: chalk.hex("#6C757D"),
-    
+
     menuItem: chalk.hex("#E9ECEF"),
     menuItemSelected: chalk.hex("#4ECDC4"),
     menuDescription: chalk.hex("#6C757D"),
     menuSeparator: chalk.hex("#495057"),
     menuConfig: chalk.hex("#FF9E64"),
     menuExit: chalk.hex("#F72585"),
-    
+
     icon: {
         category: "📂",
         target: "🌐",
