@@ -241,36 +241,27 @@ class XSSScanner {
    * @returns {boolean} true se for um bloqueio, false caso contrário
    */
   isSecurityBlock(response) {
-    if (response.status < 200 || response.status >= 400) {
-      if (response.status === 403 || response.status === 429 || response.status === 503) {
-        return true;
-      }
-      if (response.status >= 500) {
-        return true;
-      }
-    }
-
-    const serverHeader = (response.headers['server'] || '').toLowerCase();
-    if (serverHeader.includes('cloudflare')) {
-      if (response.headers['cf-chl-bypass'] || 
-          response.headers['cf-mitigated'] === 'challenge' ||
-          response.headers['cf-chl-bypass']) {
-        return true;
-      }
-    }
-
-    const cfRay = response.headers['cf-ray'];
-    const bodyStr = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
-    if (cfRay && (bodyStr.includes('Cloudflare Ray ID') || bodyStr.includes('Just a moment'))) {
+    if (response.status === 403 || response.status === 429) {
       return true;
     }
 
-    if (bodyStr.includes('Attention Required!') && bodyStr.includes('Cloudflare')) {
+    if (response.status >= 500 && response.status < 600) {
       return true;
     }
 
-    if (bodyStr.includes('Sorry, you have been blocked') || 
-        bodyStr.includes('You are unable to access')) {
+    const bodyStr = typeof response.data === 'string' ? response.data.toLowerCase() : '';
+    
+    if (bodyStr.includes('cloudflare') && 
+        (bodyStr.includes('ray id') || 
+         bodyStr.includes('just a moment') || 
+         bodyStr.includes('attention required') ||
+         bodyStr.includes('sorry, you have been blocked') ||
+         bodyStr.includes('you are unable to access'))) {
+      return true;
+    }
+
+    if (bodyStr.includes('access denied') && 
+        (bodyStr.includes('waf') || bodyStr.includes('firewall') || bodyStr.includes('security'))) {
       return true;
     }
 
@@ -278,15 +269,17 @@ class XSSScanner {
   }
 
   /**
-   * Verifica se o payload foi refletido de forma ativa na resposta
+   * Verifica se o payload foi refletido na resposta de forma potencialmente perigosa
    * @param {string} responseData - Corpo da resposta HTML/texto
    * @param {string} payload - Payload injetado
-   * @returns {boolean} true se o payload foi refletido ativamente, false caso contrário
+   * @returns {boolean} true se o payload foi refletido, false caso contrário
    */
   isPayloadReflected(responseData, payload) {
     if (!responseData || typeof responseData !== 'string') {
       return false;
     }
+
+    const htmlWithoutComments = responseData.replace(/<!--[\s\S]*?-->/g, '');
 
     const htmlEntities = {
       '&lt;': '<',
@@ -303,39 +296,54 @@ class XSSScanner {
       fullyEscapedPayload = fullyEscapedPayload.split(char).join(escapedChar);
     }
 
-    if (responseData.includes(fullyEscapedPayload) && !responseData.includes(payload)) {
+    if (fullyEscapedPayload !== payload && 
+        htmlWithoutComments.includes(fullyEscapedPayload) && 
+        !htmlWithoutComments.includes(payload)) {
       return false;
     }
 
-    const htmlWithoutComments = responseData.replace(/<!--[\s\S]*?-->/g, '');
-
-    const scriptTagRegex = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-    const htmlWithoutScripts = htmlWithoutComments.replace(scriptTagRegex, '');
-
-    if (htmlWithoutScripts.includes(payload)) {
-      return true;
-    }
-
-    const tagContentRegex = />[^<]*$/gm;
-    const textContentMatches = htmlWithoutScripts.match(tagContentRegex);
-    if (textContentMatches) {
-      for (const match of textContentMatches) {
-        if (match.includes(payload)) {
-          return false;
-        }
+    const searchPayloads = [payload];
+    
+    if (payload.includes('<') && payload.includes('>')) {
+      const encodedLt = payload.replace(/</g, '&lt;');
+      if (encodedLt !== payload) {
+        searchPayloads.push(encodedLt);
       }
     }
 
-    const attributeRegex = /value="([^"]*)"/gi;
-    let attrMatch;
-    while ((attrMatch = attributeRegex.exec(htmlWithoutScripts)) !== null) {
-      if (attrMatch[1].includes(payload)) {
+    for (const searchPayload of searchPayloads) {
+      if (htmlWithoutComments.includes(searchPayload)) {
+        const idx = htmlWithoutComments.indexOf(searchPayload);
+        const context = htmlWithoutComments.substring(Math.max(0, idx - 100), idx + searchPayload.length + 100);
+        
+        if (context.includes('<script') && context.includes('</script>')) {
+          continue;
+        }
+        
+        if (context.match(/<[^>]*\s+value\s*=\s*["'][^"']*$/i) && context.includes('"')) {
+          return true;
+        }
+        
+        const isInsideTag = /<[^>]*$/.test(htmlWithoutComments.substring(0, idx));
+        const isClosingTag = /^[^<]*>/.test(htmlWithoutComments.substring(idx + searchPayload.length));
+        
+        if (isInsideTag && isClosingTag) {
+          return true;
+        }
+        
+        if (!isInsideTag && !isClosingTag) {
+          const surroundingText = htmlWithoutComments.substring(
+            Math.max(0, idx - 50), 
+            Math.min(htmlWithoutComments.length, idx + searchPayload.length + 50)
+          );
+          
+          if (!surroundingText.includes('&lt;') && !surroundingText.includes('&gt;')) {
+            return true;
+          }
+        }
+        
         return true;
       }
-    }
-
-    if (htmlWithoutScripts.includes(payload)) {
-      return true;
     }
 
     return false;
@@ -354,25 +362,35 @@ class XSSScanner {
     try {
       const response = await axios.get(url, {
         timeout: this.config.scanner.timeout_ms,
-        headers: { "User-Agent": this.config.scanner.user_agent },
+        headers: { 
+          "User-Agent": this.config.scanner.user_agent,
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.5"
+        },
         validateStatus: () => true,
-        maxRedirects: 0,
-        responseType: 'text'
+        maxRedirects: 5
       });
 
-      if (this.isSecurityBlock(response)) {
-        return { payload, url, vulnerable: false, index: index + 1 };
-      }
-
-      const decoded = decodeURIComponent(encodeURIComponent(payload));
-      if (this.isPayloadReflected(response.data, decoded)) {
-        vulnerable = true;
+      if (!this.isSecurityBlock(response)) {
+        vulnerable = this.isPayloadReflected(response.data, payload);
       }
     } catch (err) {
       // Request failed silently
     }
 
     return { payload, url, vulnerable, index: index + 1 };
+  }
+
+  /**
+   * Obtém o delay configurado em milissegundos
+   * @returns {number} Delay em milissegundos
+   */
+  getConfiguredDelay() {
+    if (this.config?.scanner?.delay_between_requests_ms !== undefined &&
+        this.config?.scanner?.delay_between_requests_ms !== null) {
+      return parseInt(this.config.scanner.delay_between_requests_ms) || 0;
+    }
+    return 0;
   }
 
   async run() {
@@ -386,8 +404,11 @@ class XSSScanner {
       `Testing ${colors.primary.bold(String(this.payloads.length))} payloads from ${colors.highlight.bold(this.category)} category\n`
     );
 
-    if (this.config.scanner.delay_between_requests_ms < 2000) {
-      console.log(colors.warning.bold("⚠️  Rate limiting warning: delay < 2 seconds may trigger WAF blocks\n"));
+    const configuredDelay = this.getConfiguredDelay();
+    if (configuredDelay > 0 && configuredDelay < 2000) {
+      console.log(colors.warning.bold(`⚠️  Low delay detected (${configuredDelay}ms) - may trigger rate limiting\n`));
+    } else if (configuredDelay === 0) {
+      console.log(colors.warning.bold("⚠️  No delay configured - this may trigger rate limiting\n"));
     }
 
     const spinner = ora({
@@ -400,6 +421,8 @@ class XSSScanner {
 
     const concurrentLimit = 5;
     let cursor = 0;
+    
+    const effectiveDelay = configuredDelay > 0 ? configuredDelay : 500;
 
     while (cursor < this.payloads.length) {
       const batch = [];
@@ -444,7 +467,7 @@ class XSSScanner {
       cursor += concurrentLimit;
 
       if (cursor < this.payloads.length) {
-        await sleep(this.config.scanner.delay_between_requests_ms);
+        await sleep(effectiveDelay);
       }
     }
 
