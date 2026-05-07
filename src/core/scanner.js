@@ -76,13 +76,20 @@ class XSSScanner {
     await this.loadPayloads();
     ensureDir(this.config.scanner.report_dir);
     this.reporter = new Reporter(this.config.scanner.report_dir);
+
+    if (this.mode === "playwright") {
+      const { BrowserManager } = require("./browser");
+      this.browserManager = new BrowserManager(this.config, { ...this.args, mode: "playwright" });
+      await this.browserManager.launch();
+    }
   }
 
   /**
- * 🔄 Exibe menu de seleção de modo de execução
- * Pula automaticamente para axios se estiver no Termux
- * @returns {Promise<void>}
- */
+* 🔄 Exibe menu de seleção de modo de execução
+* Pula automaticamente para axios se estiver no Termux
+* Verifica e instala dependências do Playwright quando necessário
+* @returns {Promise<void>}
+*/
   async showModeMenu() {
     console.clear();
 
@@ -137,16 +144,55 @@ class XSSScanner {
       return;
     }
 
-    this.mode = mode;
-
     if (mode === "playwright") {
-      console.log(colors.warning("\n  ⚠️  Playwright mode requires browser dependencies"));
-      console.log(colors.muted("  Install with: npx playwright install chromium\n"));
-      await sleep(2000);
+      try {
+        const { execSync } = require("child_process");
+        const os = require("os");
+        const fs = require("fs");
+        const path = require("path");
+
+        let browserPath;
+        const home = os.homedir();
+
+        if (process.platform === "win32") {
+          const localAppData = process.env.LOCALAPPDATA || path.join(home, "AppData", "Local");
+          browserPath = path.join(localAppData, "ms-playwright");
+        } else if (process.platform === "darwin") {
+          browserPath = path.join(home, "Library", "Caches", "ms-playwright");
+        } else {
+          const cacheDir = process.env.XDG_CACHE_HOME || path.join(home, ".cache");
+          browserPath = path.join(cacheDir, "ms-playwright");
+        }
+
+        const browsersInstalled = fs.existsSync(browserPath);
+
+        if (!browsersInstalled) {
+          console.log(colors.warning("\n  ⚠️  Playwright browsers not found!"));
+          console.log(colors.muted("  Installing Chromium automatically...\n"));
+          execSync("npx playwright install chromium", {
+            stdio: "inherit",
+            timeout: 120000
+          });
+          console.log(colors.success("\n  ✅ Chromium installed successfully!\n"));
+        }
+
+        console.log(colors.success("  ✅ Playwright mode activated with Chromium\n"));
+        await sleep(1500);
+      } catch (installError) {
+        console.log(colors.error(`\n  ❌ Failed to install Chromium: ${installError.message}\n`));
+        console.log(colors.muted("  Switching to Axios mode...\n"));
+        await sleep(2000);
+        this.mode = "axios";
+        console.log(colors.success("  ✅ Axios mode selected - fast and lightweight\n"));
+        await sleep(1500);
+        return;
+      }
     } else {
       console.log(colors.success("\n  ✅ Axios mode selected - fast and lightweight\n"));
       await sleep(1500);
     }
+
+    this.mode = mode;
   }
 
   /**
@@ -512,35 +558,48 @@ class XSSScanner {
   }
 
   /**
-   * 🎯 Testa um payload individual contra a URL alvo
-   * @param {string} payload - Payload a ser testado
-   * @param {number} index - Índice do payload na lista
-   * @returns {Object} Resultado do teste
-   */
+* 🎯 Testa um payload individual contra a URL alvo
+* @param {string} payload - Payload a ser testado
+* @param {number} index - Índice do payload na lista
+* @returns {Object} Resultado do teste
+*/
   async testPayload(payload, index) {
     const url = this.targetUrl.replace("[XSS]", encodeURIComponent(payload));
     let vulnerable = false;
+    let dialogMessage = null;
 
     try {
-      const response = await axios.get(url, {
-        timeout: this.config.scanner.timeout_ms,
-        headers: {
-          "User-Agent": this.config.scanner.user_agent,
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.5"
-        },
-        validateStatus: () => true,
-        maxRedirects: 5
-      });
+      let response;
 
-      if (!this.isSecurityBlock(response)) {
-        vulnerable = this.isPayloadReflected(response.data, payload);
+      if (this.browserManager && this.mode === "playwright") {
+        response = await this.browserManager.request(url);
+
+        if (response && response.dialogMessage) {
+          vulnerable = true;
+          dialogMessage = response.dialogMessage;
+        }
+      } else {
+        response = await axios.get(url, {
+          timeout: this.config.scanner.timeout_ms,
+          headers: {
+            "User-Agent": this.config.scanner.user_agent,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5"
+          },
+          validateStatus: () => true,
+          maxRedirects: 5
+        });
+
+        if (!this.isSecurityBlock(response)) {
+          const responseData = typeof response.data === 'string' ? response.data : '';
+          vulnerable = this.isPayloadReflected(responseData, payload);
+        }
       }
     } catch (err) {
       // Request failed silently
     }
 
-    return { payload, url, vulnerable, index: index + 1 };
+    return { payload, url, vulnerable, index: index + 1, dialogMessage };
   }
 
   /**
@@ -556,11 +615,20 @@ class XSSScanner {
   }
 
   /**
-   * 🚀 Executa o scan completo
-   * @returns {Promise<void>}
-   */
+* 🚀 Executa o scan completo
+* @returns {Promise<void>}
+*/
   async run() {
     await this.initialize();
+
+    if (this.args.headed && this.mode === "playwright") {
+      if (!this.config.scanner) this.config.scanner = {};
+      this.config.scanner.headless = false;
+      this.browserManager.config.scanner.headless = false;
+      await this.browserManager.close();
+      await this.browserManager.launch();
+    }
+
     this.results.scan_start = new Date().toISOString();
 
     console.clear();
@@ -568,18 +636,17 @@ class XSSScanner {
     const displayMode = this.mode === "playwright" ? "🌐 Playwright" : "⚡ Axios";
     Logger.showBanner(this.config, this.payloads.length, this.category, this.targetUrl);
 
-    console.log(colors.highlight(`\n  ✸ Mode: ${displayMode}\n`));
+    console.log(colors.highlight(`\n  ✸ Mode: ${displayMode}`));
+
+    if (this.mode === "playwright") {
+      if (this.config.scanner.headless === false) {
+        console.log(colors.warning("  🖥️  Headed mode - browser window will be visible\n"));
+      }
+    }
 
     Logger.log("info",
       `Testing ${colors.primary.bold(String(this.payloads.length))} payloads from ${colors.highlight.bold(this.category)} category\n`
     );
-
-    const configuredDelay = this.getConfiguredDelay();
-    if (configuredDelay > 0 && configuredDelay < 2000) {
-      console.log(colors.warning.bold(`⚠️  Low delay detected (${configuredDelay}ms) - may trigger rate limiting\n`));
-    } else if (configuredDelay === 0) {
-      console.log(colors.warning.bold("⚠️  No delay configured - this may trigger rate limiting\n"));
-    }
 
     const spinner = ora({
       text: colors.action("Initializing scan..."),
@@ -589,9 +656,10 @@ class XSSScanner {
 
     if (!this.args.verbose) spinner.start();
 
-    const concurrentLimit = 5;
+    const concurrentLimit = this.mode === "playwright" ? 1 : 5;
     let cursor = 0;
 
+    const configuredDelay = this.getConfiguredDelay();
     const effectiveDelay = configuredDelay > 0 ? configuredDelay : 500;
 
     while (cursor < this.payloads.length) {
@@ -643,6 +711,10 @@ class XSSScanner {
 
     if (spinner.isSpinning) {
       spinner.succeed(colors.success("Scan completed"));
+    }
+
+    if (this.browserManager) {
+      await this.browserManager.close();
     }
 
     this.results.scan_end = new Date().toISOString();

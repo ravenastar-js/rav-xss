@@ -108,8 +108,8 @@ class BoxManager {
     const statusText = hasVulns ? `${results.vulns_found} XSS FOUND` : "ALL CLEAN";
 
     const isTermux = this.detectTermux();
-    const maxWidth = isTermux ? 80 : 55;
-    const boxWidth = isTermux ? 90 : 70;
+    const maxWidth = isTermux ? 80 : 80;
+    const boxWidth = isTermux ? 90 : 100;
 
     const displayReportPath = this.wrapPath(reportPath, maxWidth, "Report");
     const displayReportDir = this.wrapPath(reportDir, maxWidth, "Reports folder");

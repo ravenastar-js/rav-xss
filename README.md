@@ -185,7 +185,7 @@ Ao executar sem argumentos, o fluxo interativo é:
 | Modo | Ícone | Descrição | Velocidade | Dependências |
 |------|-------|-----------|------------|--------------|
 | **Axios** | ⚡ | Requisições HTTP diretas | ⚡ Rápido | Nenhuma extra |
-| **Playwright** | 🌐 | Automação de navegador real | 🐢 Lento | `npx playwright install chromium` |
+| **Playwright** | 🌐 | Automação de navegador real | 🐢 Lento | `npx playwright install` |
 
 > 📱 **Termux/Android:** O modo Playwright é desativado automaticamente. Apenas Axios fica disponível.
 
@@ -203,6 +203,7 @@ Ao executar sem argumentos, o fluxo interativo é:
 | `--help` | `-h` | ❓ Mostrar ajuda | - |
 | `--configure` | - | ⚙️ Wizard de configuração | - |
 | `--open-reports` | `-r` | 📁 Abrir pasta de relatórios | - |
+| `--headed` | - | 🖥️ Abrir navegador visível (modo Playwright) | `false` |
 
 ---
 

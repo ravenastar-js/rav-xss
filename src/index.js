@@ -11,11 +11,15 @@ const { loadConfig, validateConfig } = require("./config/manager");
 const { XSSScanner } = require("./core/scanner");
 const { colors } = require("./config/colors");
 
+/**
+ * 📁 Abre a pasta de relatórios no explorador de arquivos
+ * @param {string} reportDir - Caminho do diretório de relatórios
+ */
 const openReportsFolder = (reportDir) => {
   const resolvedPath = path.resolve(reportDir);
-  
+
   console.log(`\n${colors.text("📂 Reports folder:")} ${colors.link(resolvedPath)}\n`);
-  
+
   if (!fs.existsSync(resolvedPath)) {
     console.log(colors.warning("⚠️  Reports folder doesn't exist yet. Creating..."));
     try {
@@ -26,9 +30,9 @@ const openReportsFolder = (reportDir) => {
       process.exit(1);
     }
   }
-  
+
   const platform = process.platform;
-  
+
   if (platform === "win32") {
     exec(`explorer "${resolvedPath}"`);
     setTimeout(() => {
@@ -58,31 +62,44 @@ const openReportsFolder = (reportDir) => {
   }
 };
 
+/**
+ * 🚀 Função principal
+ * @returns {Promise<void>}
+ */
 const main = async () => {
   const args = parseArgs();
-  
+
   if (hasHelp(args)) {
     showHelp();
     process.exit(0);
   }
-  
+
   if (shouldConfigure(args)) {
     await runWizard();
     process.exit(0);
   }
-  
+
   if (shouldOpenReports(args)) {
     const config = loadConfig();
     openReportsFolder(config.scanner.report_dir);
     return;
   }
-  
+
   const config = loadConfig();
   if (!validateConfig(config)) {
     console.error("Invalid configuration. Run --configure to set up.");
     process.exit(1);
   }
-  
+
+  if (args.mode) {
+    config.mode = args.mode;
+  }
+
+  if (args.headed) {
+    if (!config.scanner) config.scanner = {};
+    config.scanner.headless = false;
+  }
+
   const scanner = new XSSScanner(config, args);
   await scanner.run();
 };

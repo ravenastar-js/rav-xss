@@ -4,6 +4,7 @@ const axios = require("axios");
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
+const { execSync } = require("child_process");
 
 let playwright = null;
 try {
@@ -36,6 +37,90 @@ class BrowserManager {
 
     this.browser = null;
     this.responses = [];
+    this._browsersChecked = false;
+  }
+
+  /**
+   * 🔧 Verifica se os navegadores do Playwright estão instalados
+   * @returns {boolean} true se os navegadores estão disponíveis
+   */
+  arePlaywrightBrowsersInstalled() {
+    if (!playwright) return false;
+
+    try {
+      const registryPath = this.getPlaywrightBrowserPath();
+      if (!registryPath) return false;
+
+      return fs.existsSync(registryPath);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * 📁 Obtém o caminho esperado para os navegadores do Playwright
+   * @returns {string|null} Caminho do diretório de navegadores
+   */
+  getPlaywrightBrowserPath() {
+    try {
+      const os = require("os");
+      const home = os.homedir();
+
+      if (process.platform === "win32") {
+        const localAppData = process.env.LOCALAPPDATA || path.join(home, "AppData", "Local");
+        return path.join(localAppData, "ms-playwright");
+      } else if (process.platform === "darwin") {
+        return path.join(home, "Library", "Caches", "ms-playwright");
+      } else {
+        const cacheDir = process.env.XDG_CACHE_HOME || path.join(home, ".cache");
+        return path.join(cacheDir, "ms-playwright");
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * 🔧 Verifica e instala os navegadores do Playwright se necessário
+   * @returns {boolean} true se os navegadores estão prontos
+   */
+  ensurePlaywrightBrowsers() {
+    if (this._browsersChecked) return true;
+    if (!playwright) return false;
+
+    const installed = this.arePlaywrightBrowsersInstalled();
+
+    if (installed) {
+      this._browsersChecked = true;
+      return true;
+    }
+
+    console.log("\n" + [
+      "═".repeat(55),
+      "  ⚠️  Playwright browsers not found!",
+      "  Installing Chromium automatically...",
+      "═".repeat(55)
+    ].join("\n"));
+
+    try {
+      execSync("npx playwright install chromium", {
+        stdio: "inherit",
+        timeout: 120000
+      });
+      console.log("  ✅ Chromium installed successfully!\n");
+      this._browsersChecked = true;
+      return true;
+    } catch (installError) {
+      console.log([
+        "",
+        "  ❌ Failed to install Chromium automatically.",
+        "  Please install manually with:",
+        "    npx playwright install chromium",
+        ""
+      ].join("\n"));
+      this._browsersChecked = true;
+      return false;
+    }
   }
 
   /**
@@ -44,6 +129,11 @@ class BrowserManager {
    */
   async launch() {
     if (this.mode !== "playwright") return null;
+
+    if (!this.ensurePlaywrightBrowsers()) {
+      this.mode = "axios";
+      return null;
+    }
 
     const browserType = playwright.chromium;
 
@@ -162,15 +252,30 @@ class BrowserManager {
       await this.launch();
     }
 
+    if (this.mode === "axios") {
+      return await this.axiosRequest(url, options);
+    }
+
     const context = await this.createContext();
     const page = await this.createPage(context);
 
+    let dialogMessage = null;
+    let dialogHandled = false;
+
+    page.on("dialog", async (dialog) => {
+      dialogMessage = dialog.message();
+      dialogHandled = true;
+      await dialog.accept();
+    });
+
     try {
       const response = await page.goto(url, {
-        waitUntil: "networkidle",
+        waitUntil: "domcontentloaded",
         timeout: this.config.scanner.timeout_ms || 8000,
         ...options
       });
+
+      await page.waitForTimeout(1000);
 
       const body = await page.content();
 
@@ -179,14 +284,20 @@ class BrowserManager {
         status: response?.status() || 0,
         headers: response?.headers() || {},
         body: body,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        dialogMessage: dialogMessage
       });
 
       const result = {
         status: response?.status() || 0,
         data: body,
-        headers: response?.headers() || {}
+        headers: response?.headers() || {},
+        dialogMessage: dialogMessage
       };
+
+      if (this.config.scanner.headless === false) {
+        await page.waitForTimeout(1500);
+      }
 
       await context.close();
       return result;
@@ -266,6 +377,12 @@ class BrowserManager {
 
     if (mode === "playwright" && !playwright) {
       mode = "axios";
+    }
+
+    if (mode === "playwright") {
+      if (!this.ensurePlaywrightBrowsers()) {
+        mode = "axios";
+      }
     }
 
     this.mode = mode;
