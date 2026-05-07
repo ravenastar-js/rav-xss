@@ -1,3 +1,6 @@
+# config
+config.json
+
 # Código fonte (apenas dist/build vai para o pacote)
 src/
 payloads/
