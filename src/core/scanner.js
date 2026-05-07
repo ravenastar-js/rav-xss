@@ -16,7 +16,8 @@ const CATEGORY_MAP = {
   "basic": ["🔰 Basic Payloads", "Standard HTML tags & events"],
   "filterevasion": ["🛡️ Filter Evasion", "Encoding, null bytes, obfuscation"],
   "polyglots": ["🎭 Polyglots", "Multi-context payloads"],
-  "wafbypass": ["🔥 WAF Bypass", "Cloudflare, ModSecurity evasion"]
+  "wafbypass": ["🔥 WAF Bypass", "Cloudflare, ModSecurity evasion"],
+  "purereflex": ["💎 Pure Reflex", "Reflected-only payloads, no template injection"]
 };
 
 class XSSScanner {
@@ -147,7 +148,7 @@ class XSSScanner {
           menuChoices.push({
             name: `  ${displayName}  ${colors.dim("—")}  ${colors.menuDescription(description)}`,
             value: folderName,
-            short: displayName.replace(/[🔰🛡️🎭👁️🔥]/g, "").trim()
+            short: displayName.replace(/[🔰🛡️🎭👁️🔥💎]/g, "").trim()
           });
         }
 
