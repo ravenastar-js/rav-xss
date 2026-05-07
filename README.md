@@ -18,6 +18,7 @@
 
 ![ravxss](src/media/ravxss.png)
 
+![ravxss](src/media/ravxss-demo.png)
 ---
 
 </div>
@@ -33,6 +34,7 @@ Se precisar de ajuda ou quiser falar com a equipe, entre no nosso servidor de su
 ## 📋 Índice
 - [🛡️ RAV XSS](#️-rav-xss)
     - [🎯 Basic Reflected XSS scanner for bug bounty programs.](#-basic-reflected-xss-scanner-for-bug-bounty-programs)
+  - [](#)
   - [📞 Suporte](#-suporte)
   - [📋 Índice](#-índice)
   - [🎯 Visão Geral](#-visão-geral)
