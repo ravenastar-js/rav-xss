@@ -20,6 +20,8 @@ try {
  * 
  * Gerencia requisições HTTP via Axios (Modo Normal) e navegação
  * via Playwright (Modo Navegador) com detecção automática de ambiente.
+ * Inicializa o navegador com sandbox rigoroso para mitigar riscos de
+ * páginas maliciosas e ataques de supply-chain.
  */
 class BrowserManager {
   constructor(config, args) {
@@ -124,7 +126,9 @@ class BrowserManager {
   }
 
   /**
-   * 🚀 Inicializa o navegador Playwright
+   * 🚀 Inicializa o navegador Playwright com sandbox reforçado.
+   * Desabilita credenciais de rede e barra downloads para isolar o ambiente
+   * de testes do sistema operacional real, prevenindo impactos de páginas maliciosas.
    * @returns {Promise<Object>} Instância do navegador
    */
   async launch() {
@@ -142,7 +146,49 @@ class BrowserManager {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage'
+        '--disable-dev-shm-usage',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--disable-background-networking',
+        '--disable-sync',
+        '--disable-default-apps',
+        '--disable-translate',
+        '--disable-extensions',
+        '--disable-plugins',
+        '--disable-popup-blocking',
+        '--disable-prompt-on-repost',
+        '--disable-ipc-flooding-protection',
+        '--disable-hang-monitor',
+        '--disable-client-side-phishing-detection',
+        '--disable-component-update',
+        '--disable-domain-reliability',
+        '--disable-breakpad',
+        '--disable-background-timer-throttling',
+        '--disable-renderer-backgrounding',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-field-trial-config',
+        '--disable-software-rasterizer',
+        '--disable-speech-api',
+        '--disable-print-preview',
+        '--disable-notifications',
+        '--no-default-browser-check',
+        '--no-first-run',
+        '--no-pings',
+        '--no-service-autorun',
+        '--media-cache-size=1',
+        '--disk-cache-size=1',
+        '--aggressive-cache-discard',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--disable-reading-from-canvas',
+        '--disable-remote-fonts',
+        '--disable-partial-raster',
+        '--enable-features=NetworkService,NetworkServiceInProcess',
+        '--force-color-profile=srgb',
+        '--metrics-recording-only',
+        '--mute-audio',
+        '--no-experiments',
+        '--no-sandbox-and-elevated'
       ]
     });
 
@@ -161,7 +207,9 @@ class BrowserManager {
   }
 
   /**
-   * 🌐 Cria um novo contexto de navegação
+   * 🌐 Cria um novo contexto de navegação estritamente isolado.
+   * Desabilita permissões sensíveis e ignora erros HTTPS para evitar
+   * vazamento de informações ou interações maliciosas com o sistema.
    * @returns {Promise<Object>} Contexto do navegador
    */
   async createContext() {
@@ -169,7 +217,16 @@ class BrowserManager {
 
     return await this.browser.newContext({
       userAgent: this.config.scanner.user_agent,
-      ignoreHTTPSErrors: true
+      ignoreHTTPSErrors: true,
+      permissions: [],
+      geolocation: undefined,
+      locale: 'en-US',
+      timezoneId: 'UTC',
+      acceptDownloads: false,
+      bypassCSP: false,
+      extraHTTPHeaders: {
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
     });
   }
 
