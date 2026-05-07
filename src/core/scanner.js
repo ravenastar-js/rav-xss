@@ -59,6 +59,8 @@ class XSSScanner {
 
   /**
    * Encontra o arquivo de payload na categoria
+   * @param {string} categoryDir - Diretório da categoria
+   * @returns {string|null} Caminho do arquivo de payload ou null se não encontrado
    */
   findPayloadFile(categoryDir) {
     if (!fs.existsSync(categoryDir)) return null;
@@ -233,6 +235,118 @@ class XSSScanner {
     await sleep(1500);
   }
 
+  /**
+   * Verifica se a resposta HTTP indica um bloqueio por WAF ou segurança
+   * @param {Object} response - Resposta do axios
+   * @returns {boolean} true se for um bloqueio, false caso contrário
+   */
+  isSecurityBlock(response) {
+    if (response.status < 200 || response.status >= 400) {
+      if (response.status === 403 || response.status === 429 || response.status === 503) {
+        return true;
+      }
+      if (response.status >= 500) {
+        return true;
+      }
+    }
+
+    const serverHeader = (response.headers['server'] || '').toLowerCase();
+    if (serverHeader.includes('cloudflare')) {
+      if (response.headers['cf-chl-bypass'] || 
+          response.headers['cf-mitigated'] === 'challenge' ||
+          response.headers['cf-chl-bypass']) {
+        return true;
+      }
+    }
+
+    const cfRay = response.headers['cf-ray'];
+    const bodyStr = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+    if (cfRay && (bodyStr.includes('Cloudflare Ray ID') || bodyStr.includes('Just a moment'))) {
+      return true;
+    }
+
+    if (bodyStr.includes('Attention Required!') && bodyStr.includes('Cloudflare')) {
+      return true;
+    }
+
+    if (bodyStr.includes('Sorry, you have been blocked') || 
+        bodyStr.includes('You are unable to access')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Verifica se o payload foi refletido de forma ativa na resposta
+   * @param {string} responseData - Corpo da resposta HTML/texto
+   * @param {string} payload - Payload injetado
+   * @returns {boolean} true se o payload foi refletido ativamente, false caso contrário
+   */
+  isPayloadReflected(responseData, payload) {
+    if (!responseData || typeof responseData !== 'string') {
+      return false;
+    }
+
+    const htmlEntities = {
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#x27;': "'",
+      '&#x2F;': '/',
+      '&amp;': '&'
+    };
+
+    let fullyEscapedPayload = payload;
+    for (const [entity, char] of Object.entries(htmlEntities)) {
+      const escapedChar = entity;
+      fullyEscapedPayload = fullyEscapedPayload.split(char).join(escapedChar);
+    }
+
+    if (responseData.includes(fullyEscapedPayload) && !responseData.includes(payload)) {
+      return false;
+    }
+
+    const htmlWithoutComments = responseData.replace(/<!--[\s\S]*?-->/g, '');
+
+    const scriptTagRegex = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+    const htmlWithoutScripts = htmlWithoutComments.replace(scriptTagRegex, '');
+
+    if (htmlWithoutScripts.includes(payload)) {
+      return true;
+    }
+
+    const tagContentRegex = />[^<]*$/gm;
+    const textContentMatches = htmlWithoutScripts.match(tagContentRegex);
+    if (textContentMatches) {
+      for (const match of textContentMatches) {
+        if (match.includes(payload)) {
+          return false;
+        }
+      }
+    }
+
+    const attributeRegex = /value="([^"]*)"/gi;
+    let attrMatch;
+    while ((attrMatch = attributeRegex.exec(htmlWithoutScripts)) !== null) {
+      if (attrMatch[1].includes(payload)) {
+        return true;
+      }
+    }
+
+    if (htmlWithoutScripts.includes(payload)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Testa um payload individual contra a URL alvo
+   * @param {string} payload - Payload a ser testado
+   * @param {number} index - Índice do payload na lista
+   * @returns {Object} Resultado do teste com payload, url, vulnerable e index
+   */
   async testPayload(payload, index) {
     const url = this.targetUrl.replace("[XSS]", encodeURIComponent(payload));
     let vulnerable = false;
@@ -241,15 +355,21 @@ class XSSScanner {
       const response = await axios.get(url, {
         timeout: this.config.scanner.timeout_ms,
         headers: { "User-Agent": this.config.scanner.user_agent },
-        validateStatus: () => true
+        validateStatus: () => true,
+        maxRedirects: 0,
+        responseType: 'text'
       });
 
+      if (this.isSecurityBlock(response)) {
+        return { payload, url, vulnerable: false, index: index + 1 };
+      }
+
       const decoded = decodeURIComponent(encodeURIComponent(payload));
-      if (response.data && response.data.includes(decoded)) {
+      if (this.isPayloadReflected(response.data, decoded)) {
         vulnerable = true;
       }
     } catch (err) {
-      // Request failed
+      // Request failed silently
     }
 
     return { payload, url, vulnerable, index: index + 1 };
@@ -265,6 +385,10 @@ class XSSScanner {
     Logger.log("info",
       `Testing ${colors.primary.bold(String(this.payloads.length))} payloads from ${colors.highlight.bold(this.category)} category\n`
     );
+
+    if (this.config.scanner.delay_between_requests_ms < 2000) {
+      console.log(colors.warning.bold("⚠️  Rate limiting warning: delay < 2 seconds may trigger WAF blocks\n"));
+    }
 
     const spinner = ora({
       text: colors.action("Initializing scan..."),
@@ -371,6 +495,13 @@ class XSSScanner {
 
     return normalized;
   }
+
+  /**
+   * Trunca a URL para exibição compacta
+   * @param {string} url - URL completa
+   * @param {number} maxLength - Comprimento máximo
+   * @returns {string} URL truncada
+   */
   truncateUrl(url, maxLength = 55) {
     if (!url) return "N/A";
     if (url.length <= maxLength) return url;
