@@ -40,18 +40,24 @@ Se precisar de ajuda ou quiser falar com a equipe, entre no nosso servidor de su
   - [🛠️ Como Usar](#️-como-usar)
     - [Uso Básico](#uso-básico)
     - [Menu Interativo](#menu-interativo)
+    - [Modos de Execução](#modos-de-execução)
   - [🎛️ Opções da CLI](#️-opções-da-cli)
   - [📂 Categorias de Payloads](#-categorias-de-payloads)
   - [📁 Abrir Pasta de Relatórios](#-abrir-pasta-de-relatórios)
+  - [🧹 Limpar e Sair](#-limpar-e-sair)
   - [🚀 Exemplos Práticos](#-exemplos-práticos)
     - [1. Reconhecimento Básico](#1-reconhecimento-básico)
     - [2. Teste com WAF Bypass](#2-teste-com-waf-bypass)
     - [3. Delay Personalizado](#3-delay-personalizado)
-    - [4. Modo Interativo](#4-modo-interativo)
-    - [5. Abrir Relatórios](#5-abrir-relatórios)
+    - [4. Scan com Modo Específico](#4-scan-com-modo-específico)
+    - [5. Modo Interativo Completo](#5-modo-interativo-completo)
+    - [6. Abrir Relatórios](#6-abrir-relatórios)
   - [📊 Relatórios](#-relatórios)
   - [⚙️ Configuração](#️-configuração)
     - [Wizard Interativo](#wizard-interativo)
+    - [Arquivo config.txt](#arquivo-configtxt)
+    - [Configuração Padrão (Demo)](#configuração-padrão-demo)
+  - [📱 Compatibilidade Termux](#-compatibilidade-termux)
   - [⚠️ Aviso Legal](#️-aviso-legal)
   - [Star History](#star-history)
   - [Feito com 💚 por RavenaStar](#feito-com--por-ravenastar)
@@ -64,12 +70,16 @@ O **RAV XSS** é uma ferramenta básica para detecção de Reflected XSS, projet
 
 ### ✨ Características Principais
 - 🎯 **Categorias organizadas** — Payloads separados por tipo de ataque
-- 🖥️ **Menu interativo** — Seleção de categorias com setas do teclado
+- 🖥️ **Menu interativo** — Seleção de categorias e modos com setas do teclado
+- 🔄 **Modos de execução** — Axios (rápido) ou Playwright (navegador real)
+- 📱 **Compatível com Termux** — Detecta e adapta automaticamente para Android
 - 🌐 **Detecção por reflexão** — Identifica payloads refletidos na resposta HTTP
 - 📊 **Relatórios detalhados** — Geração automática de reports
 - 📁 **Abrir relatórios** — Comando rápido para abrir a pasta de reports
+- 🧹 **Limpeza segura** — Opção de limpar configs e reports com confirmação
 - ⚡ **Requisições concorrentes** — Scanning rápido e configurável
 - 🎨 **Interface colorida** — Banner ASCII art e boxes estilizados
+- 📄 **Suporte a config.txt** — Configuração via arquivo externo
 
 ---
 
@@ -124,12 +134,17 @@ rav-xss --url "https://example.com/page?q=[XSS]" --category Basic --verbose
 # Abrir pasta de relatórios
 rav-xss --open-reports
 rav-xss -r
+
+# Limpar configurações (via menu interativo)
+rav-xss
+# Selecionar "🧹 Clean and Exit" no menu
 ```
 
 ### Menu Interativo
 
-Ao executar sem argumentos, você verá:
+Ao executar sem argumentos, o fluxo interativo é:
 
+**Passo 1 — Selecionar Categoria:**
 ```
   🎯 SELECT PAYLOAD CATEGORY
 
@@ -138,10 +153,39 @@ Ao executar sem argumentos, você verá:
    🛡️ Filter Evasion  —  Encoding, null bytes, obfuscation
    🎭 Polyglots  —  Multi-context payloads
    🔥 WAF Bypass  —  Cloudflare, ModSecurity evasion
+   💎 Pure Reflex  —  Reflected-only payloads
   ───────────────────────────────────────────────────────
    🎯  Configure Target URL
+   🧹  Clean and Exit
    ❌  Exit
 ```
+
+**Passo 2 — Selecionar Modo de Execução:**
+```
+  🔄 SELECT EXECUTION MODE
+
+  ───────────────────────────────────────────────────────
+   ⚡ Axios Mode  —  Fast HTTP requests (recommended)
+   🌐 Playwright Mode  —  Real browser automation (slower)
+  ───────────────────────────────────────────────────────
+   ⮘  Back to Categories
+```
+
+**Passo 3 — Configurar URL (se necessário):**
+```
+  🌐 CONFIGURE TARGET URL
+  💡 Demo target: http://www.sudo.co.il/xss/level0.php?email=[XSS]
+  🔄 Mode: ⚡ Axios
+```
+
+### Modos de Execução
+
+| Modo | Ícone | Descrição | Velocidade | Dependências |
+|------|-------|-----------|------------|--------------|
+| **Axios** | ⚡ | Requisições HTTP diretas | ⚡ Rápido | Nenhuma extra |
+| **Playwright** | 🌐 | Automação de navegador real | 🐢 Lento | `npx playwright install chromium` |
+
+> 📱 **Termux/Android:** O modo Playwright é desativado automaticamente. Apenas Axios fica disponível.
 
 ---
 
@@ -149,8 +193,9 @@ Ao executar sem argumentos, você verá:
 
 | Opção | Atalho | Descrição | Padrão |
 |-------|--------|-----------|--------|
-| `--url` | - | 🌐 URL alvo com placeholder `[XSS]` | - |
-| `--category` | - | 📂 Categoria de payloads | - |
+| `--url` | - | 🌐 URL alvo com placeholder `[XSS]` | Demo URL |
+| `--category` | - | 📂 Categoria de payloads | Menu interativo |
+| `--mode` | - | 🔄 Modo de execução (`axios` ou `playwright`) | Menu interativo |
 | `--delay` | - | ⏱️ Delay entre requisições (ms) | `500` |
 | `--verbose` | `-v` | 📢 Log detalhado | `false` |
 | `--help` | `-h` | ❓ Mostrar ajuda | - |
@@ -161,12 +206,13 @@ Ao executar sem argumentos, você verá:
 
 ## 📂 Categorias de Payloads
 
-| Categoria | Descrição |
-|-----------|-----------|
-| 🔰 **Basic Payloads** | Standard HTML tags & events |
-| 🛡️ **Filter Evasion** | Encoding, null bytes, obfuscation |
-| 🎭 **Polyglots** | Multi-context payloads |
-| 🔥 **WAF Bypass** | Cloudflare, ModSecurity evasion |
+| Categoria | Ícone | Descrição |
+|-----------|-------|-----------|
+| **Basic Payloads** | 🔰 | Standard HTML tags & events |
+| **Filter Evasion** | 🛡️ | Encoding, null bytes, obfuscation |
+| **Polyglots** | 🎭 | Multi-context payloads |
+| **WAF Bypass** | 🔥 | Cloudflare, ModSecurity evasion |
+| **Pure Reflex** | 💎 | Reflected-only, no template injection |
 
 ---
 
@@ -193,6 +239,27 @@ rav-xss -r
 
 ---
 
+## 🧹 Limpar e Sair
+
+Opção disponível no menu interativo principal que permite limpar todos os arquivos de configuração e relatórios:
+
+```
+  🧹  Clean and Exit
+```
+
+**Comportamento:**
+1. Exibe mensagem de confirmação: `⚠️ This will DELETE all config files and reports. Continue? (y/N)`
+2. Se confirmado, remove:
+   - `config.json` (raiz do projeto e diretório atual)
+   - `config.txt` (raiz do projeto e diretório atual)
+   - Pasta `reports/` com todo seu conteúdo
+3. Exibe resumo do que foi removido
+4. Exibe tela de despedida e encerra
+
+> 🛡️ **Segurança:** Requer confirmação explícita para evitar exclusão acidental.
+
+---
+
 ## 🚀 Exemplos Práticos
 
 ### 1. Reconhecimento Básico
@@ -213,14 +280,27 @@ rav-xss --url "https://example.com/search?q=[XSS]" --category WAFBypass --verbos
 rav-xss --url "https://example.com/search?q=[XSS]" --category FilterEvasion --delay 1000
 ```
 
-### 4. Modo Interativo
+### 4. Scan com Modo Específico
+
+```
+# Usando Axios (rápido)
+rav-xss --url "https://example.com/page?q=[XSS]" --category Basic --mode axios
+
+# Usando Playwright (navegador real)
+rav-xss --url "https://example.com/page?q=[XSS]" --category Basic --mode playwright
+```
+
+### 5. Modo Interativo Completo
 
 ```
 rav-xss
-# Selecionar categoria com setas → Enter → Digitar URL → Escanear
+# 1. Selecionar categoria com setas → Enter
+# 2. Selecionar modo (Axios ou Playwright) → Enter
+# 3. Digitar URL (ou usar demo) → Enter
+# 4. Scan executa automaticamente
 ```
 
-### 5. Abrir Relatórios
+### 6. Abrir Relatórios
 
 ```
 rav-xss -r
@@ -238,6 +318,14 @@ reports/
 └── xss_report_2026-05-06T12-00-00-000Z.txt
 ```
 
+**Conteúdo do relatório:**
+- 📅 Data e hora do scan
+- 🌐 URL alvo testada
+- ⏱️ Duração total
+- 📊 Total de testes realizados
+- ⚠️ Vulnerabilidades encontradas
+- 📝 Lista detalhada de cada finding com URL completa
+
 ---
 
 ## ⚙️ Configuração
@@ -248,6 +336,72 @@ reports/
 rav-xss --configure
 npm run configure
 ```
+
+O wizard guia você através de:
+1. 📋 Nome do target
+2. 🌐 URL alvo (com placeholder `[XSS]`)
+3. ⏱️ Timeout das requisições
+4. ⏳ Delay entre requisições
+5. 🔄 Modo de execução (Axios/Playwright)
+6. 👁️ Mostrar resultados não-vulneráveis
+
+### Arquivo config.txt
+
+Você pode criar um arquivo `config.txt` na raiz do projeto com:
+
+```
+# RAV XSS Configuration
+target=http://www.sudo.co.il/xss/level0.php?email=[XSS]
+delay=500
+mode=axios
+timeout=8000
+```
+
+**Parâmetros suportados:**
+| Parâmetro | Descrição | Exemplo |
+|-----------|-----------|---------|
+| `target` | 🌐 URL alvo com `[XSS]` | `target=https://example.com/?q=[XSS]` |
+| `delay` | ⏳ Delay em ms | `delay=1000` |
+| `mode` | 🔄 Modo (`axios`/`playwright`) | `mode=axios` |
+| `timeout` | ⏱️ Timeout em ms | `timeout=8000` |
+| `verbose` | 📢 Modo verbose | `verbose=true` |
+| `user_agent` | 🕵️ User-Agent customizado | `user_agent=Mozilla/5.0...` |
+
+> 💡 O arquivo `config.txt` tem prioridade sobre `config.json` quando ambos existem.
+
+### Configuração Padrão (Demo)
+
+Se nenhuma configuração for fornecida, o scanner usa este alvo demo para testes:
+
+```
+🌐 Demo Target:
+   http://www.sudo.co.il/xss/level0.php?email=[XSS]
+   
+📝 Descrição: Página pública de teste XSS
+🔄 Modo padrão: Axios
+⏳ Delay padrão: 500ms
+```
+
+---
+
+## 📱 Compatibilidade Termux
+
+O **RAV XSS** detecta automaticamente quando está rodando no Termux (Android) e se adapta:
+
+| Recurso | Desktop | Termux |
+|---------|---------|--------|
+| 🔰 Modo Axios | ✅ Disponível | ✅ Disponível |
+| 🌐 Modo Playwright | ✅ Disponível | ❌ Desativado |
+| 🧙‍♂️ Wizard | ✅ Completo | ✅ Adaptado |
+| 📁 Relatórios | ✅ Normal | ✅ Normal |
+
+**Detecção automática:**
+- Verifica variável `TERMUX_VERSION`
+- Verifica prefixo `com.termux`
+- Verifica hostname (`termux`/`android`)
+- Verifica existência de `/data/data/com.termux`
+
+> 📱 No Termux, o menu de modo é pulado e Axios é selecionado automaticamente.
 
 ---
 
