@@ -16,6 +16,8 @@
 [![📦 Repo Size](https://img.shields.io/github/repo-size/ravenastar-js/rav-xss?style=for-the-badge&label=%F0%9F%93%A6%20Repo%20Size&color=2d7445&logo=database&logoColor=white&labelColor=444&radius=10)](https://github.com/ravenastar-js/rav-xss)
 [![⚙️ Node.js](https://img.shields.io/badge/%E2%9A%99%EF%B8%8F%20Node.js-14.0%2B-green?style=for-the-badge&logo=nodedotjs&color=2d7445&logoColor=white&labelColor=444&radius=10)](https://nodejs.org/pt/download)
 
+![ravxss](src/media/ravxss.png)
+
 ---
 
 </div>
