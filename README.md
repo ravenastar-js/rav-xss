@@ -430,13 +430,13 @@ Esta ferramenta é destinada para:
 
 ---
 
-## Star History
+## 🌟 Star History
 
-<a href="https://www.star-history.com/#ravenastar-js/rav-xss&Date">
+<a href="https://www.star-history.com/?repos=ravenastar-js%2Frav-xss&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ravenastar-js/rav-xss&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ravenastar-js/rav-xss&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ravenastar-js/rav-xss&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/rav-xss&type=date&theme=dark&legend=top-left&sealed_token=3Jr4fBrIXQkiAHYncGwbHT5St8eWpLPvwj7qYX7AFGheR1qy3jltZ0vaCbNOrTpgvO-p4N9BLYHsMw010eL4B-QhWP8ROh9ysZqHqZiQ2u8y_ohlTSjPXg" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=ravenastar-js/rav-xss&type=date&legend=top-left&sealed_token=3Jr4fBrIXQkiAHYncGwbHT5St8eWpLPvwj7qYX7AFGheR1qy3jltZ0vaCbNOrTpgvO-p4N9BLYHsMw010eL4B-QhWP8ROh9ysZqHqZiQ2u8y_ohlTSjPXg" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=ravenastar-js/rav-xss&type=date&legend=top-left&sealed_token=3Jr4fBrIXQkiAHYncGwbHT5St8eWpLPvwj7qYX7AFGheR1qy3jltZ0vaCbNOrTpgvO-p4N9BLYHsMw010eL4B-QhWP8ROh9ysZqHqZiQ2u8y_ohlTSjPXg" />
  </picture>
 </a>
 
